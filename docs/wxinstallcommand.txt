@@ -1,0 +1,1 @@
+sudo apt-get install python-wxgtk3.0sudo apt-get install python-wxgtk3.0
