@@ -2,8 +2,18 @@ import psutil
 from collections import deque
 import time
 from threading import Thread
+import copy
 
 PORT = 50999
+
+COLETA_CPU = 0
+COLETA_MEMORIA = 1
+COLETA_SWAP = 2
+COLETA_REDE = 3
+COLETA_NUM_PROCESSOS_ATIVOS = 4
+COLETA_MAX_PROC_MEM = 5
+COLETA_MAX_PROC_CPU = 6
+COLETA_DISCO = 7
 
 class Recursos:
 
@@ -20,6 +30,7 @@ class Recursos:
 #		self.disco = disco
 
 	def __init_(self):
+		self.tempo = time.time()
 		self.cpu = None
 		self.memoria = None
 		self.swap = None
@@ -31,7 +42,7 @@ class Recursos:
 
 
 	def __str__(self):
-		print 'timestamp'
+		print self.tempo
 		print self.cpu
 		print self.memoria
 		print self.swap
@@ -286,13 +297,48 @@ class Disco:
 #	global proc_list
 #	return proc_list[item][2]
 
+
+def coleta_recurso(tipo_recurso):
+
+	global recursos
+	tipo_recurso = int(tipo_recurso)
+	rec = copy.copy(recursos)
+
+	if tipo_recurso is COLETA_CPU:
+		for r in rec:
+			#print r.tempo
+			print r.cpu
+	elif tipo_recurso is COLETA_MEMORIA:
+		for r in rec:
+			print r.memoria
+	elif tipo_recurso is COLETA_SWAP:
+		for r in rec:
+			print r.swap
+	elif tipo_recurso is COLETA_REDE:
+		for r in rec:
+			print r.rede
+	elif tipo_recurso is COLETA_NUM_PROCESSOS_ATIVOS:
+		for r in rec:
+			print r.num_processos_ativos
+	elif tipo_recurso is COLETA_MAX_PROC_MEM:
+		for r in rec:
+			print r.cinco_processos_mem
+	elif tipo_recurso is COLETA_MAX_PROC_CPU:
+		for r in rec:
+			print r.cinco_processos_cpu
+	elif tipo_recurso is COLETA_DISCO:
+		for r in rec:
+			print r.disco
+
 def salva_recursos():
 
 	global recursos
 	c = 0
-	while c < 2:
+	#while c < 2:
+	while True:
+#		print 'it ' + str(c)
 		r = Recursos()
-		r.registra_cpu(Cpu(psutil.cpu_percent()))
+		r.registra_cpu(Cpu(psutil.cpu_percent(interval=0)))
 		mem = psutil.virtual_memory()
 		r.registra_memoria(Memoria(str(mem.used / 1024.0 / 1024.0) + '/' + str(mem.total / 1024.0 / 1024.0),mem.percent))
 		mem = psutil.swap_memory()
@@ -313,7 +359,7 @@ def salva_recursos():
 				proc = psutil.Process(pid)
 				if proc is not None:
 					proc.cpu_percent()
-					proc_list[pid] = [proc, proc.memory_percent(), proc.cpu_percent(interval=0.5)]
+					proc_list[pid] = [proc, proc.memory_percent(), proc.cpu_percent(interval=0.0)]
 #					print str(proc.name())
 			except:
 				print 'error when getting process information'
@@ -344,12 +390,12 @@ def salva_recursos():
 		time.sleep(INTERVALO_TEMPO)
 		c = c+1
 
-	print 'Quantidade de recursos coletados ' + str(len(recursos))
-	for r in recursos:
-		print r
+	#print 'Quantidade de recursos coletados ' + str(len(recursos))
+	#for r in recursos:
+	#	print r
 
-TAMANHO_JANELA_DESLIZANTE = 1000
-INTERVALO_TEMPO = 1
+TAMANHO_JANELA_DESLIZANTE = 5
+INTERVALO_TEMPO = 0.01
 
 recursos = deque("",TAMANHO_JANELA_DESLIZANTE)
 
@@ -366,4 +412,6 @@ recursos = deque("",TAMANHO_JANELA_DESLIZANTE)
 recursos_thread = Thread(target=salva_recursos)
 recursos_thread.start()
 
-
+while True:
+	option = raw_input("Digite o recurso\n")
+	coleta_recurso(option)
