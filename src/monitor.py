@@ -3,6 +3,7 @@ from collections import deque
 import time
 from threading import Thread
 import copy
+import datetime
 
 PORT = 50999
 
@@ -29,7 +30,7 @@ class Recursos:
 #		self.cinco_processos_cpu = cinco_processos_cpu
 #		self.disco = disco
 
-	def __init_(self):
+	def __init__(self):
 		self.tempo = time.time()
 		self.cpu = None
 		self.memoria = None
@@ -42,7 +43,7 @@ class Recursos:
 
 
 	def __str__(self):
-		print self.tempo
+		print self.formata_tempo()
 		print self.cpu
 		print self.memoria
 		print self.swap
@@ -53,6 +54,8 @@ class Recursos:
 		print self.disco
 		return ''
 
+	def formata_tempo(self):
+		return datetime.datetime.fromtimestamp(self.tempo).strftime("%d/%m/%Y - %H:%M:%S.%f")
 
 	def registra_cpu(self, cpu):
 		self.cpu = cpu
@@ -306,28 +309,35 @@ def coleta_recurso(tipo_recurso):
 
 	if tipo_recurso is COLETA_CPU:
 		for r in rec:
-			#print r.tempo
+			print r.formata_tempo()
 			print r.cpu
 	elif tipo_recurso is COLETA_MEMORIA:
 		for r in rec:
+			print r.formata_tempo()
 			print r.memoria
 	elif tipo_recurso is COLETA_SWAP:
 		for r in rec:
+			print r.formata_tempo()
 			print r.swap
 	elif tipo_recurso is COLETA_REDE:
 		for r in rec:
+			print r.formata_tempo()
 			print r.rede
 	elif tipo_recurso is COLETA_NUM_PROCESSOS_ATIVOS:
 		for r in rec:
+			print r.formata_tempo()
 			print r.num_processos_ativos
 	elif tipo_recurso is COLETA_MAX_PROC_MEM:
 		for r in rec:
+			print r.formata_tempo()
 			print r.cinco_processos_mem
 	elif tipo_recurso is COLETA_MAX_PROC_CPU:
 		for r in rec:
+			print r.formata_tempo()
 			print r.cinco_processos_cpu
 	elif tipo_recurso is COLETA_DISCO:
 		for r in rec:
+			print r.formata_tempo()
 			print r.disco
 
 def salva_recursos():
@@ -340,9 +350,9 @@ def salva_recursos():
 		r = Recursos()
 		r.registra_cpu(Cpu(psutil.cpu_percent(interval=0)))
 		mem = psutil.virtual_memory()
-		r.registra_memoria(Memoria(str(mem.used / 1024.0 / 1024.0) + '/' + str(mem.total / 1024.0 / 1024.0),mem.percent))
+		r.registra_memoria(Memoria(str(int(mem.used / 1024.0 / 1024.0)) + '/' + str(int(mem.total / 1024.0 / 1024.0)),mem.percent))
 		mem = psutil.swap_memory()
-		r.registra_swap(Memoria_Swap(str(mem.used / 1024.0 / 1024.0) + '/' + str(mem.total / 1024.0 / 1024.0),mem.percent))
+		r.registra_swap(Memoria_Swap(str("%.1f" % (mem.used / 1024.0 / 1024.0)) + '/' + str(int(mem.total / 1024.0 / 1024.0)),mem.percent))
 		rede = psutil.net_io_counters(pernic=True)
 		rec_rede = Rede()
 		for interface in rede:
@@ -358,15 +368,19 @@ def salva_recursos():
 			try:
 				proc = psutil.Process(pid)
 				if proc is not None:
+					#print 'Nome : ' + str(proc.name())
+					m = proc.memory_percent()
+					#print 'Mem Percent ' + str(m) + ' %'
 					proc.cpu_percent()
-					proc_list[pid] = [proc, proc.memory_percent(), proc.cpu_percent(interval=0.0)]
+					proc_list[pid] = [proc, m, proc.cpu_percent(interval=0.0)]
 #					print str(proc.name())
 			except:
 				print 'error when getting process information'
 
-		top_five_mem_proc = sorted(proc_list, key=lambda tup: proc_list[tup][0],reverse=True)
-		top_five_cpu_proc = sorted(proc_list, key=lambda tup: proc_list[tup][1], reverse=True)
-
+		top_five_mem_proc = sorted(proc_list, key=lambda tup: proc_list[tup][1],reverse=True)
+		#print top_five_mem_proc
+		top_five_cpu_proc = sorted(proc_list, key=lambda tup: proc_list[tup][2], reverse=True)
+		#print top_five_cpu_proc
 		pmm = Processos_Max_Memoria()
 
 		for i in range(5):
