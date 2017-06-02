@@ -408,6 +408,17 @@ def salva_recursos():
 	#for r in recursos:
 	#	print r
 
+
+
+def filtra_recurso_por_quantidade(recursos, quant):
+
+	for x in xrange(quant):
+		print recursos.pop()
+
+
+
+
+
 TAMANHO_JANELA_DESLIZANTE = 5
 INTERVALO_TEMPO = 0.01
 
