@@ -1,4 +1,6 @@
+#imorta biblioteca que coleta as informacoes do sistema
 import psutil
+#importa estrutura para fazer a janela deslizante
 from collections import deque
 import time
 from threading import Thread
@@ -7,6 +9,7 @@ import datetime
 
 PORT = 50999
 
+#identificadores para cada recurso
 COLETA_CPU = 0
 COLETA_MEMORIA = 1
 COLETA_SWAP = 2
@@ -16,19 +19,8 @@ COLETA_MAX_PROC_MEM = 5
 COLETA_MAX_PROC_CPU = 6
 COLETA_DISCO = 7
 
+#Classe que representa os recursos da maquina
 class Recursos:
-
-
-#	def __init__(self, cpu, memoria, swap, rede, num_processos_ativos, cinco_processos_mem, cinco_processos_cpu, disco):
-#
-#		self.cpu = cpu
-#		self.memoria = memoria
-#		self.swap = swap
-#		self.rede = rede
-#		self.num_processos_ativos = num_processos_ativos
-#		self.cinco_processos_mem = cinco_processos_mem
-#		self.cinco_processos_cpu = cinco_processos_cpu
-#		self.disco = disco
 
 	def __init__(self):
 		self.tempo = time.time()
@@ -41,7 +33,7 @@ class Recursos:
 		self.cinco_processos_cpu = None
 		self.disco = None
 
-
+	# imprime as informacoes dos recursos
 	def __str__(self):
 		print self.formata_tempo()
 		print self.cpu
@@ -54,75 +46,93 @@ class Recursos:
 		print self.disco
 		return ''
 
+	# formata timestamp em data
 	def formata_tempo(self):
 		return datetime.datetime.fromtimestamp(self.tempo).strftime("%d/%m/%Y - %H:%M:%S.%f")
 
+	#Salva dado de cpu
 	def registra_cpu(self, cpu):
 		self.cpu = cpu
 
+	#Salva dado de memoria
 	def registra_memoria(self, memoria):
 		self.memoria = memoria
 
+	#Salva dado de memoria swap
 	def registra_swap(self, swap):
 		self.swap = swap
 
+	#Salva dado de rede
 	def registra_rede(self, rede):
 		self.rede = rede
 
+	#Salva quantidade de processos ativos
 	def registra_num_proc_ativos(self, num_proc_ativos):
 		self.num_processos_ativos = num_proc_ativos
 
+	#Salva dado dos 5 processos que mais consomem memoria
 	def registra_cinco_proc_mem(self, proc_mem):
 		self.cinco_processos_mem = proc_mem
 
+	#Salva dado dos 5 processos que mais consomem cpu
 	def registra_cinco_proc_cpu(self, proc_cpu):
 		self.cinco_processos_cpu = proc_cpu
 
+	#Salva dado de disco
 	def registra_disco(self, disco):
 		self.disco = disco
 
+#Classe que representa a memoria virtual
 class Memoria:
 
 	def __init__(self, mb, porcento):
 		self.mb = mb
 		self.porcento = porcento
 
+	#imprimi informacoes de memoria virtual
 	def __str__(self):
 		print 'Memoria Virtual : '
 		print '                : ' + str(self.mb) + ' MB'
 		print '                : ' + str(self.porcento) + ' %'
 		return ''
 
+#Classe que representa a memoria swap
 class Memoria_Swap:
 
 	def __init__(self, mb, porcento):
 		self.mb = mb
 		self.porcento = porcento
 
+	#imprimi informacoes de memoria swap
 	def __str__(self):
 		print 'Memoria Swap : '
 		print '             : ' + str(self.mb) + ' MB'
 		print '             : ' + str(self.porcento) + ' %'
 		return ''
 
+#Classe que representa a memoria cpu
 class Cpu:
 
 	def __init__(self, porcento):
 		self.porcento = porcento
 
+	#imprimi informacoes de memoria
 	def __str__(self):
 		print 'CPU : '
 		print '    : ' + str(self.porcento) + ' %'
 		return ''
 
+#Classe que representa as informacoes das interfaces de rede
 class Rede:
 
 	def __init__(self):
 		self.rede = {}
 
+	#Registra interface e seus dados de trafego
 	def insere_interface(self, interface, pacotes_enviados, pacotes_recebidos):
 		self.rede[interface] = [pacotes_enviados, pacotes_recebidos]
 
+	#imprimi informacoes de rede
 	def __str__(self):
 		print 'Rede : '
 		for interface in self.rede:
@@ -131,7 +141,7 @@ class Rede:
 			print '                  : Pacotes Recebidos: ' + str(self.rede[interface][1])
 		return ''
 
-
+#Classe que representa as informacoes de um processo
 class Processo:
 
 	def __init__(self,pid,nome,dono,tempo,mem,cpu):
@@ -142,6 +152,7 @@ class Processo:
 		self.mem = mem
 		self.cpu = cpu
 
+	#imprimi informacoes do processo
 	def __str__(self):
 		print '      PID ' + str(self.pid)
 		print '      Nome ' + str(self.nome)
@@ -151,15 +162,17 @@ class Processo:
 		print '      Consumo de cpu ' + str(self.cpu) + '%'
 		return ''
 
-
+#Classe que represente a lista dos processos que mais consomem memoria
 class Processos_Max_Memoria:
 
 	def __init__(self):
 		self.proc = {}
 
+	#registra processo
 	def adiciona_processo(self, processo):
 		self.proc[processo] = processo
 
+	#imprime os processos que mais consomem memoria
 	def __str__(self):
 
 		print 'Processos - Maior Consumo Memoria'
@@ -167,14 +180,17 @@ class Processos_Max_Memoria:
 			print p
 		return ''
 
+#Classe que represente a lista dos processos que mais consomem cpu
 class Processos_Max_Cpu:
 
 	def __init__(self):
 		self.proc = {}
 
+	#registra processo
 	def adiciona_processo(self, processo):
 		self.proc[processo] = processo
 
+	#imprime os processos que mais consomem cpu
 	def __str__(self):
 
 		print 'Processos - Maior Consumo Cpu'
@@ -182,131 +198,30 @@ class Processos_Max_Cpu:
 			print p
 		return ''
 
+#Classe que represente as informacoes de Disco
 class Disco:
 
 	def __init__(self, gb,porcento):
 		self.gb = gb
 		self.porcento = porcento
 
+	#imprime os dados de disco
 	def __str__(self):
 		print 'Disco : '
 		print '      : ' + str(self.gb) + ' Gb'
 		print '      : ' + str(self.porcento) + ' %'
 		return ''
 
-#Consumo de CPU (%)
-#uso_cpu = psutil.cpu_percent(interval=1)
-#print 'Uso de CPU (%) ' + str(uso_cpu)
-
-#Consumo de Memoria (MB e %)
-#mem = psutil.virtual_memory()
-#uso_memoria = {}
-#uso_memoria['%'] = mem.percent
-#uso_memoria['MB'] = str(mem.used / 1024.0 / 1024.0) + '/' + str(mem.total / 1024.0 / 1024.0)
-#print 'Uso de Memoria (MB e %)' + str(uso_memoria)
-
-#Consumo de SWAP (MB e %)
-#swap = psutil.swap_memory()
-#uso_swap = {}
-#uso_swap['%'] = swap.percent
-#uso_swap['MB'] = str(swap.used / 1024.0 / 1024.0) + '/' + str(swap.total / 1024.0 / 1024.0)
-#print 'Uso de SWAP (MB e %)' + str(uso_swap)
-
-#Trafego de Dados - Interfaces de Rede
-#rede = psutil.net_io_counters(pernic=True)
-#uso_rede = {}
-#for interface in rede:
-#	uso_rede[interface] = [ rede[interface].packets_sent , rede[interface].packets_recv ]
-
-#for ur in uso_rede:#
-#	print 'Interface ' + ur + ':'
-#	print '        Pacotes Enviados ' + str(uso_rede[ur][0])
-#	print '        Pacotes Recebidos ' + str(uso_rede[ur][1])
-
-#Numero de processos ativos
-#processos = psutil.pids()
-#num_processos_ativos = len(processos)
-#print 'Numero de Processos Ativos ' + str(num_processos_ativos)
-
-#proc_list = {}
-
-#def ordena_pela_memoria(item):
-#	global proc_list
-#	return proc_list[item][1]
-#
-#def ordena_pela_cpu(item):
-#	global proc_list
-#	return proc_list[item][2]
-#counter = 1
-#for pid in processos:
-#	#print "Calculating Processes information ", str(counter) + '/' + str(num_processos_ativos) + "\r",
-#	try:
-#		proc = psutil.Process(pid)
-#		if proc is not None:
-#			proc.cpu_percent()
-#			proc_list[pid] = [proc, proc.memory_percent(), proc.cpu_percent(interval=0.5)]
-#			print str(proc.name())
-#	except:
-#		print 'error when getting process information'
-#	counter = counter + 1
-#
-#top_five_mem_proc = sorted(proc_list, key=ordena_pela_memoria,reverse=True)
-#top_five_cpu_proc = sorted(proc_list, key=ordena_pela_cpu, reverse=True)
-#
-#def imprime_top_five(procs, label):
-#
-#	print 'Processos com maior consumo de ' + label
-#	for i in range(5):
-#		print '## '  + str(i+1) + ' ##'
-#		p  = proc_list[top_five_mem_proc[i]][0]
-#		print 'PID ' + str(p.pid)
-#		print 'Nome ' + str(p.name())
-#		print 'Dono ' + str(p.username())
-#		print 'Tempo ' + str(p.create_time())
-#		if label is 'mem':
-#			print 'Consumo de memoria ' + str(proc_list[top_five_mem_proc[i]][1]) + '%'
-#		else :
-#			print 'Consumo de cpu ' + str(proc_list[top_five_cpu_proc[i]][2]) + '%'
-#		print '\n'
-#
-#imprime_top_five(top_five_mem_proc, 'mem')
-#imprime_top_five(top_five_cpu_proc,'cpu')
-
-#for tpid in top_five_mem_proc:
-#	print 'PID ' + str(proc_list[tpid][0].name
-
-#for pid in processos:
-#	proc = psutil.Process(pid)
-#	if proc is not None:
-#		print 'PID ' + str(proc.pid)
-#		print 'Nome ' + str(proc.name())
-#		print 'User ' + str(proc.username())
-#		print 'Time ' + str(proc.create_time())
-#		print 'CPU % ' + str(proc.memory_percent())
-#		print 'Mem % ' + str(proc.cpu_percent())
-#	print '\n\n'
-
-#uso de Discos
-#uso_disco = psutil.disk_usage('/')
-#tam_total =  uso_disco.total / 1024.0 / 1024.0 / 1024.0
-#tam_usado =  uso_disco.used / 1024.0 / 1024.0 / 1024.0
-#print 'Uso do Disco ' + str(tam_usado) + '/' + str(tam_total) + 'GB - ' + str(uso_disco.percent) + '%'
-
-#def ordena_pela_memoria(item):
-#	global proc_list
-#	return proc_list[item][1]
-
-#def ordena_pela_cpu(item):
-#	global proc_list
-#	return proc_list[item][2]
-
-
+#funcao que imprime um determinado recurso a partir de recursos ja coletados
 def coleta_recurso(tipo_recurso):
 
 	global recursos
 	tipo_recurso = int(tipo_recurso)
+	#copia da estrutura pois a original deve continuar coletando recursos
 	rec = copy.copy(recursos)
 
+	#dependendo do tipo pedido e impresso a hora que foi coletado o recurso
+	# e as informacoes do recurso
 	if tipo_recurso is COLETA_CPU:
 		for r in rec:
 			print r.formata_tempo()
@@ -340,53 +255,64 @@ def coleta_recurso(tipo_recurso):
 			print r.formata_tempo()
 			print r.disco
 
+#Funcao que salva os recursos de tempos em tempos
 def salva_recursos():
 
 	global recursos
 	c = 0
-	#while c < 2:
 	while True:
-#		print 'it ' + str(c)
+		#cria um objeto do tipo Recursos
 		r = Recursos()
+		#salva informacao de cpu
 		r.registra_cpu(Cpu(psutil.cpu_percent(interval=0)))
+		#salva informacao de memoria virtual
 		mem = psutil.virtual_memory()
 		r.registra_memoria(Memoria(str(int(mem.used / 1024.0 / 1024.0)) + '/' + str(int(mem.total / 1024.0 / 1024.0)),mem.percent))
+		#salva informacao de memoria swap
 		mem = psutil.swap_memory()
 		r.registra_swap(Memoria_Swap(str("%.1f" % (mem.used / 1024.0 / 1024.0)) + '/' + str(int(mem.total / 1024.0 / 1024.0)),mem.percent))
+		#salva informacao de rede
 		rede = psutil.net_io_counters(pernic=True)
 		rec_rede = Rede()
+		#registra cada interface e seus dados de trafego
 		for interface in rede:
 			rec_rede.insere_interface(interface, rede[interface].packets_sent, rede[interface].packets_recv)
 		r.registra_rede(rec_rede)
+		#pega os processos do sistema
 		processos = psutil.pids()
+		#salva numero de processos ativos
 		r.registra_num_proc_ativos(len(processos))
 
 		proc_list = {}
 
+		#percorre a lista de todos os processos do sistema e salva em uma lista as informacoes do processo, seu consumo de memoria e cpu
 		for pid in processos:
 
 			try:
+				#obtem processo
 				proc = psutil.Process(pid)
 				if proc is not None:
-					#print 'Nome : ' + str(proc.name())
 					m = proc.memory_percent()
-					#print 'Mem Percent ' + str(m) + ' %'
 					proc.cpu_percent()
+					#salva processo na lista
 					proc_list[pid] = [proc, m, proc.cpu_percent(interval=0.0)]
-#					print str(proc.name())
 			except:
-				print 'error when getting process information'
+				#error tentando pegar informacao de processo'
+				pass
 
+		#ordena a lista de processos pelo consumo de memoria e guarda na lista top_five_mem_proc
 		top_five_mem_proc = sorted(proc_list, key=lambda tup: proc_list[tup][1],reverse=True)
-		#print top_five_mem_proc
+		#ordena a lista de processos pelo consumo de cpu e guarda na lista top_five_cpu_proc
 		top_five_cpu_proc = sorted(proc_list, key=lambda tup: proc_list[tup][2], reverse=True)
-		#print top_five_cpu_proc
+		
+		#registra os 5 cinco processos que mais consomem memoria
 		pmm = Processos_Max_Memoria()
-
 		for i in range(5):
 			pmm.adiciona_processo(Processo(proc_list[top_five_mem_proc[i]][0].pid,proc_list[top_five_mem_proc[i]][0].name(),proc_list[top_five_mem_proc[i]][0].username(),proc_list[top_five_mem_proc[i]][0].create_time(),proc_list[top_five_mem_proc[i]][1],proc_list[top_five_mem_proc[i]][2]))
 
 		r.registra_cinco_proc_mem(pmm)
+
+		#registra os 5 cinco processos que mais consomem cpu
 		pmc = Processos_Max_Cpu()
 
 		for i in range(5):
@@ -394,49 +320,34 @@ def salva_recursos():
 
 		r.registra_cinco_proc_cpu(pmc)
 
+		#salva informacao de disco
 		uso_disco = psutil.disk_usage('/')
 		tam_total =  uso_disco.total / 1024.0 / 1024.0 / 1024.0
 		tam_usado =  uso_disco.used / 1024.0 / 1024.0 / 1024.0
 		r.registra_disco(Disco(str(tam_usado) + '/' + str(tam_total),str(uso_disco.percent)))
 
+		#Registra os recursos coletados na estrutura que guarda todos os registros
 		recursos.append(r)
 
+		#espera para coletar 
 		time.sleep(INTERVALO_TEMPO)
-		c = c+1
-
-	#print 'Quantidade de recursos coletados ' + str(len(recursos))
-	#for r in recursos:
-	#	print r
 
 
-
-def filtra_recurso_por_quantidade(recursos, quant):
-
-	for x in xrange(quant):
-		print recursos.pop()
-
-
-
-
-
+#tamanho da janela deslizante, deve ser 1000, mas pra teste 5
 TAMANHO_JANELA_DESLIZANTE = 5
+#tempo de espera 100 ms
 INTERVALO_TEMPO = 0.01
 
+#estrutura para guardar os recursos coletados, essa estrutura funciona exatamente como uma janela deslizante
 recursos = deque("",TAMANHO_JANELA_DESLIZANTE)
 
-#medidas_cpu = deque("",TAMANHO_JANELA_DESLIZAN#$TE)
-#medidas_memoria = deque("",TAMANHO_JANELA_DESLIZANTE)
-#medidas_memoria_swap = deque("",TAMANHO_JANELA_DESLIZANTE)
-#medidas_rede = deque("",TAMANHO_JANELA_DESLIZANTE)
-#medidas_processos_max_memoria = deque("",TAMANHO_JANELA_DESLIZANTE)
-#medidas_processos_max_cpu = deque("",TAMANHO_JANELA_DESLIZANTE)
-#medidas_num_processos = deque("",TAMANHO_JANELA_DESLIZANTE)
-#medidas_disco = deque("",TAMANHO_JANELA_DESLIZANTE)
-
-
+#cria nova thread para rodar a funcao que salva os recursos
 recursos_thread = Thread(target=salva_recursos)
 recursos_thread.start()
 
+#Para testar - funcao que sempre pede um valor correspondente a um recurso para imprimir na tela
 while True:
-	option = raw_input("Digite o recurso\n")
-	coleta_recurso(option)
+	#le do teclado identificador do recurso
+	opcao_recurso = raw_input("Digite o recurso\n")
+	#chama funcao para imprimir informacoes coletadas do recurso pedido
+	coleta_recurso(opcao_recurso)
