@@ -2,11 +2,12 @@ import socket
 import sys
 import linecache
 from threading import Thread, BoundedSemaphore
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 
 
 COLETOR_PORTA = 50053
+MONITOR_PORTA = 50999
 ARQUIVO_CADASTRO_MAQUINAS = "maquinas.txt"
 
 ###Soluca da internet para ver todas as informacoes sobre o erro dentro do except:
@@ -21,8 +22,8 @@ def PrintException():
 
 # funcao que cadastra uma maquina
 def cadastra_maquina(ip):
-	#salva o ip da maquina em arquivo
-	global s_arquivo_cadastro_maquinas
+    #salva o ip da maquina em arquivo
+    global s_arquivo_cadastro_maquinas
 
     s_arquivo_cadastro_maquinas.acquire()
 
@@ -37,8 +38,8 @@ def cadastra_maquina(ip):
 
 # funcao que retorna a lista de maquinas cadastradas
 def lista_maquinas_cadastradas():
-	#le maquinas do arquivo
-	global s_arquivo_cadastro_maquinas
+    #le maquinas do arquivo
+    global s_arquivo_cadastro_maquinas
 
     # verificar se o usuario e senha estao no arquivo e se sao compativeis
     s_arquivo_cadastro_maquinas.acquire()
@@ -51,117 +52,61 @@ def lista_maquinas_cadastradas():
     
     arquivo_maquinas_cadastradas.close()
     s_arquivo_cadastro_maquinas.release()
+    return maquinas
 
 # funcao que retorna um recurso monitorado de uma maquina
 def lista_recurso_maquina(ip,recurso,formato):
-	#envia pedido (get) de recurso para o monitor
-	pass
-
-# funcao que imprime informacoes da requisicao feita pelo usuario
-def imprime_requisicao():
-	#IP DO USUARIO
-	#PORTA DO USUARIO
-	#INFORMACOES DA REQUISICAO (IP MAQUINA, RECURSO, FORMATO)
-	#TIMESTAMP
-	pass
+    #envia pedido (get) de recurso para o monitor
+    pass
 
 # funcao que conecta com a maquina (monitor)
 def conecta_monitor(ip):
-	pass
-
-# funcao que desconecta da maquina (monitor)
-def desconecta_monitor(ip):
-	pass
-
-# Funcao que conecta socket do servidor
-def conecta_servidor():
-    global servidor_sock
     try:
         # Cria socket para conexao
-        servidor_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        monitor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Configura endereco - IP e Porta
-        endereco_servidor = (host_ip, porta)
-        print >> sys.stderr, 'Conectando em %s port %s' % endereco_servidor
-        servidor_sock.connect(endereco_servidor)
-        print >> sys.stderr, 'Conectado'
-        return True
+        endereco_servidor = (ip, MONITOR_PORTA)
+        monitor_socket.connect(endereco_servidor)
+        return monitor_socket
     except:
-        return False
+        return None
 
-# Funcao que desconecta socket do servidor
-def desconecta_servidor():
-    servidor_sock.close()
-
-# Funcao que realiza comunicacao com servidor
-def estabelece_conexao_servidor(host_ip, porta):
-    global s_servidor_contectado, servidor_conectado, mensagem_erro
-
-    # Configura IP e Porta do Servidor
-    configura_servidor(host_ip, porta)
-    # Verifica se conecta com o servidor
-    if (conecta_servidor()):
-        # mensagem_erro = None
-        # Libera a variavel que controla se conectou o servidor ou se deu erro
-        s_servidor_contectado.acquire()
-        servidor_conectado = True
-        s_servidor_contectado.release()
-    else:
-        # mensagem_erro = 'Nao foi possivel conectar ao servidor'
-        # Libera a variavel que controla se conectou o servidor ou se deu erro
-        s_servidor_contectado.acquire()
-        servidor_conectado = False
-        s_servidor_contectado.release()
-
-#Thread que escuta as mensagens vindas do servidor
-def escuta_servidor():
-
-    while True:
-        data = servidor_sock.recv(4096)
-        log_mensagem_recebida(data)
-
-        #verifica o tipo da mensagem para processar
-        if 'Contato_cliente' in data:
-            #executa o metodo para mostrar janela de contato do cliente  na thread da interface grafica
-            wx.CallAfter(tela.mostra_comprador,str(data))
-        elif 'Contato_vendedor' in data:
-            # executa o metodo para mostrar janela de contato do vendedor na thread da interface grafica
-            wx.CallAfter(tela.mostra_vendedor,str(data))
-        elif 'Lance' in data:
-            # chama funcao para atualizar o lance na tabela de leiloes
-            tela.atualiza_leilao_tabela(str(data))
-        elif 'Fim_leilao' in data:
-            # executa o metodo para mostrar janela de aviso de fim de leilao na thread da interface grafica
-            wx.CallAfter(tela.mostra_fim_leilao,str(data))
-        elif 'Listagem' in data:
-            # executa o metodo para mostrar janela da lista de leiloes na thread da interface grafica
-            wx.CallAfter(tela.mostra_lista_leiloes,str(data))
-        else:
-            # executa o metodo para processar as respostas de Ok e not_okna thread da interface grafica
-            wx.CallAfter(tela.processa_resposta, str(data))
-
+# funcao que desconecta da maquina (monitor)
+def desconecta_monitor(monitor_socket):
+    monitor_socket.close()
 
 # funcao que recebe requisicao
 def processa_requisicao(msg,conn,addr,numero_requisicao):
-	
-	marca_tempo = datetime.datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y - %H:%M:%S.%f")
 
-	print '###### Requisicao ' + numero_requisicao + ' ######'
-	print 'Marca de Tempo: ' + str(marca_tempo)
-	print 'Usuario\n      IP: ' + addr + '\n      PORTA: ' + addr
-	print 'Opercacao:'
+    marca_tempo = datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y - %H:%M:%S.%f")
 
-	if 'cadastra' in msg:
-		#todo imprimir
-		pass
-	elif 'lista' in msg:
-		#todo imprimir
-		pass
-	elif 'recurso' in msg:
-		#todo imprimir
-		pass
-	else
-		#todo imprimir
-		conn.sendAll("Erro")
+    print '###### Requisicao ' + numero_requisicao + ' ######'
+    print 'Marca de Tempo: ' + str(marca_tempo)
+    print 'Usuario\n      IP: ' + addr + '\n      PORTA: ' + addr
+    print 'Opercacao:'
+
+    if 'cadastra' in msg:
+        msg = msg.split(',')
+        #todo imprimir
+        cadastra_maquina(msg[1])
+        conn.sendAll('Ok')
+    elif 'lista' in msg:
+        #todo imprimir
+        conn.sendAll(lista_maquinas_cadastradas())
+    elif 'recurso' in msg:
+        msg = msg.split(',')
+        #todo imprimir
+        socket = conecta_monitor(msg[1])
+        if socket is None:
+            print 'erro ao conectar'
+        else:
+            lista_recurso_maquina(msg[1],msg[2],msg[3])
+            resppsta_monitor = socket.recv(4096)
+            conn.sendAll(resppsta_monitor)
+            desconecta_monitor(socket)
+    else
+        #todo imprimir
+        conn.sendAll("Erro")
 
 #Thread que aceita as conexoes dos clientes
 def aceita(conn,addr):
