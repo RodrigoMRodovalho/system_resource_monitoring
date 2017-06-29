@@ -25,16 +25,33 @@ def cadastra_maquina(ip):
     #salva o ip da maquina em arquivo
     global s_arquivo_cadastro_maquinas
 
-    s_arquivo_cadastro_maquinas.acquire()
+    try:
+		s_arquivo_cadastro_maquinas.acquire()
 
-    #abertura do arquivo
-    arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, 'r+')
+		#abertura do arquivo
+		arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, 'r+')
 
-    #escrita no arquivo
-    arquivo_maquinas_cadastradas.write(str(ip) + '\n')
-        
-    arquivo_maquinas_cadastradas.close()
-    s_arquivo_cadastro_maquinas.release()
+		maquina_nao_cadastrada = True
+		#verifica se a maquina ja esta cadastrada
+		for maquina_ip in arquivo_usuarios:
+		    if maquina_ip == ip:
+		        maquina_nao_cadastrada = False
+		        break
+
+		#caso a maquina nao esteja cadastrada entao escreve no arquivo
+		if maquina_nao_cadastrada:
+		    #escrita no arquivo
+		    arquivo_maquinas_cadastradas.write(str(ip) + '\n')
+		    
+		arquivo_maquinas_cadastradas.close()
+		s_arquivo_cadastro_maquinas.release()
+
+		return maquina_nao_cadastrada
+
+    except:
+        PrintException()
+        return False
+
 
 # funcao que retorna a lista de maquinas cadastradas
 def lista_maquinas_cadastradas():
@@ -55,9 +72,16 @@ def lista_maquinas_cadastradas():
     return maquinas
 
 # funcao que retorna um recurso monitorado de uma maquina
-def lista_recurso_maquina(ip,recurso,formato):
+def lista_recurso_maquina(conn,msg):
     #envia pedido (get) de recurso para o monitor
-    pass
+	socket_monitor = conecta_monitor(msg[1])
+	if socket_monitor is None:
+	    print 'erro ao conectar'
+	else:
+	    socket_monitor.sendall(str(msg[2] + ',' + msg[3] + ',' + msg[4]))
+	    resposta_monitor = socket_monitor.recv(4096)
+	    conn.sendall(resposta_monitor)
+	    desconecta_monitor(socket_monitor)
 
 # funcao que conecta com a maquina (monitor)
 def conecta_monitor(ip):
@@ -81,32 +105,34 @@ def processa_requisicao(msg,conn,addr,numero_requisicao):
     marca_tempo = datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y - %H:%M:%S.%f")
 
     print '###### Requisicao ' + numero_requisicao + ' ######'
-    print 'Marca de Tempo: ' + str(marca_tempo)
-    print 'Usuario\n      IP: ' + addr + '\n      PORTA: ' + addr
-    print 'Opercacao:'
+    print '-Marca de Tempo: ' + str(marca_tempo)
+    print '-Usuario\n      -IP: ' + str(addr[0]) + '\n      -PORTA: ' + str(addr[1])
+    print '-Operacao:'
 
     if 'cadastra' in msg:
         msg = msg.split(',')
-        #todo imprimir
-        cadastra_maquina(msg[1])
-        conn.sendAll('Ok')
+        print '      Cadastro de maquina: ' + str(msg[1])
+        if cadastra_maquina(msg[1]):
+        	conn.sendall('Ok')
+        else:
+        	conn.sendall('NOk')
+        
     elif 'lista' in msg:
-        #todo imprimir
-        conn.sendAll(lista_maquinas_cadastradas())
+        print '      Listagem de maquinas cadastradas'
+        conn.sendall(lista_maquinas_cadastradas())
     elif 'recurso' in msg:
         msg = msg.split(',')
         #todo imprimir
-        socket = conecta_monitor(msg[1])
-        if socket is None:
-            print 'erro ao conectar'
-        else:
-            lista_recurso_maquina(msg[1],msg[2],msg[3])
-            resppsta_monitor = socket.recv(4096)
-            conn.sendAll(resppsta_monitor)
-            desconecta_monitor(socket)
-    else
-        #todo imprimir
-        conn.sendAll("Erro")
+        print '      -Pedido de monitoramento:'
+        print '            IP do monitor: ' + str(msg[1])
+        print '            Recurso: ' + str(msg[2])
+        print '            Quantidade: ' + str(msg[3])
+        print '            Formato: ' + str(msg[4])
+        lista_recurso_maquina(conn,msg)
+    else:
+        print '      Desconhecida - Erro'
+        conn.sendall("Erro")
+    print '######################'
 
 #Thread que aceita as conexoes dos clientes
 def aceita(conn,addr):
@@ -163,6 +189,8 @@ HOST = '127.0.0.1'  # Symbolic name meaning all available interfaces
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # IPv4,tipo de socket
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((HOST, COLETOR_PORTA))  # liga o socket com IP e porta
+
+print 'Rodando Coletor'
 
 while 1:
     s.listen(1)  # espera chegar pacotes na porta especificada

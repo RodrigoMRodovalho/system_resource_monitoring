@@ -6,6 +6,7 @@ import time
 from threading import Thread
 import copy
 import datetime
+import socket
 
 PORT = 50999
 
@@ -35,16 +36,16 @@ class Recursos:
 
     # imprime as informacoes dos recursos
     def __str__(self):
-        print self.formata_tempo()
-        print self.cpu
-        print self.memoria
-        print self.swap
-        print self.rede
-        print 'Numero de Processos ativos: ' + str(self.num_processos_ativos)
-        print self.cinco_processos_mem
-        print self.cinco_processos_cpu
-        print self.disco
-        return ''
+        rec = self.formata_tempo()
+        rec = rec + '\n' + self.cpu
+        rec = rec + '\n' +  self.memoria
+        rec = rec + '\n' +  self.swap
+        rec = rec + '\n' +  self.rede
+        rec = rec + '\n' +  'Numero de Processos ativos: ' + str(self.num_processos_ativos)
+        rec = rec + '\n' +  self.cinco_processos_mem
+        rec = rec + '\n' +  self.cinco_processos_cpu
+        rec = rec + '\n' +  self.disco
+        return rec
 
     # formata timestamp em data
     def formata_tempo(self):
@@ -91,10 +92,10 @@ class Memoria:
 
     # imprimi informacoes de memoria virtual
     def __str__(self):
-        print 'Memoria Virtual : '
-        print '                : ' + str(self.mb) + ' MB'
-        print '                : ' + str(self.porcento) + ' %'
-        return ''
+        rec =  'Memoria Virtual : '
+        rec = rec + '\n' +  '                : ' + str(self.mb) + ' MB'
+        rec = rec + '\n' +  '                : ' + str(self.porcento) + ' %'
+        return rec
 
 
 # Classe que representa a memoria swap
@@ -105,10 +106,10 @@ class MemoriaSwap:
 
     # imprimi informacoes de memoria swap
     def __str__(self):
-        print 'Memoria Swap : '
-        print '             : ' + str(self.mb) + ' MB'
-        print '             : ' + str(self.porcento) + ' %'
-        return ''
+        rec = 'Memoria Swap : '
+        rec = rec + '\n' +  '             : ' + str(self.mb) + ' MB'
+        rec = rec + '\n' +  '             : ' + str(self.porcento) + ' %'
+        return rec
 
 
 # Classe que representa a memoria cpu
@@ -118,9 +119,9 @@ class Cpu:
 
     # imprimi informacoes de memoria
     def __str__(self):
-        print 'CPU : '
-        print '    : ' + str(self.porcento) + ' %'
-        return ''
+        rec = 'CPU : '
+        rec = rec + '\n' +  '    : ' + str(self.porcento) + ' %'
+        return rec
 
 
 # Classe que representa as informacoes das interfaces de rede
@@ -134,12 +135,12 @@ class Rede:
 
     # imprimi informacoes de rede
     def __str__(self):
-        print 'Rede : '
+        rec = 'Rede : '
         for interface in self.rede:
-            print '        Interface : ' + str(interface)
-            print '                  : Pacotes Enviados : ' + str(self.rede[interface][0])
-            print '                  : Pacotes Recebidos: ' + str(self.rede[interface][1])
-        return ''
+            rec = rec + '\n' +  '        Interface : ' + str(interface)
+            rec = rec + '\n' +  '                  : Pacotes Enviados : ' + str(self.rede[interface][0])
+            rec = rec + '\n' +  '                  : Pacotes Recebidos: ' + str(self.rede[interface][1])
+        return rec
 
 
 # Classe que representa as informacoes de um processo
@@ -154,13 +155,13 @@ class Processo:
 
     # imprimi informacoes do processo
     def __str__(self):
-        print '      PID ' + str(self.pid)
-        print '      Nome ' + str(self.nome)
-        print '      Dono ' + str(self.dono)
-        print '      Tempo ' + str(self.tempo)
-        print '      Consumo de memoria ' + str(self.mem) + '%'
-        print '      Consumo de cpu ' + str(self.cpu) + '%'
-        return ''
+        rec = '      PID ' + str(self.pid)
+        rec = rec + '\n' +  '      Nome ' + str(self.nome)
+        rec = rec + '\n' +  '      Dono ' + str(self.dono)
+        rec = rec + '\n' +  '      Tempo ' + str(self.tempo)
+        rec = rec + '\n' +  '      Consumo de memoria ' + str(self.mem) + '%'
+        rec = rec + '\n' +  '      Consumo de cpu ' + str(self.cpu) + '%'
+        return rec
 
 
 # Classe que represente a lista dos processos que mais consomem memoria
@@ -174,10 +175,10 @@ class ProcessosMaxMemoria:
 
     # imprime os processos que mais consomem memoria
     def __str__(self):
-        print 'Processos - Maior Consumo Memoria'
+        rec = 'Processos - Maior Consumo Memoria'
         for p in self.proc:
-            print p
-        return ''
+            rec = rec + '\n' +  p
+        return rec
 
 
 # Classe que represente a lista dos processos que mais consomem cpu
@@ -191,10 +192,10 @@ class ProcessosMaxCpu:
 
     # imprime os processos que mais consomem cpu
     def __str__(self):
-        print 'Processos - Maior Consumo Cpu'
+        rec = 'Processos - Maior Consumo Cpu'
         for p in self.proc:
-            print p
-        return ''
+            rec = rec + '\n' +  p
+        return rec
 
 
 # Classe que represente as informacoes de Disco
@@ -205,57 +206,54 @@ class Disco:
 
     # imprime os dados de disco
     def __str__(self):
-        print 'Disco : '
-        print '      : ' + str(self.gb) + ' Gb'
-        print '      : ' + str(self.porcento) + ' %'
-        return ''
+        rec = 'Disco : '
+        rec = rec + '\n' +  '      : ' + str(self.gb) + ' Gb'
+        rec = rec + '\n' +  '      : ' + str(self.porcento) + ' %'
+        return rec
 
 
 # funcao que imprime um determinado recurso a partir de recursos ja coletados
-def coleta_recurso(tipo_recurso,quantidade):
+def coleta_recurso(msg):
     global recursos
-    tipo_recurso = int(tipo_recurso)
-    quantidade = int(quantidade)
+    msg = msg.split(',')
+    tipo_recurso = int(msg[0])
+    quantidade = int(msg[1])
     # copia da estrutura pois a original deve continuar coletando recursos
     rec = copy.copy(recursos)
 
     if quantidade > len(rec):
         quantidade = len(rec)
 
+    resposta_coleta = ''    
     # dependendo do tipo pedido e impresso a hora que foi coletado o recurso
     # e as informacoes do recurso
     if tipo_recurso is COLETA_CPU:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.cpu
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].cpu)
     elif tipo_recurso is COLETA_MEMORIA:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.memoria
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].memoria)
     elif tipo_recurso is COLETA_SWAP:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.swap
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].swap)
     elif tipo_recurso is COLETA_REDE:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.rede
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].rede)
     elif tipo_recurso is COLETA_NUM_PROCESSOS_ATIVOS:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.num_processos_ativos
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].num_processos_ativos)
     elif tipo_recurso is COLETA_MAX_PROC_MEM:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.cinco_processos_mem
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].cinco_processos_mem)
     elif tipo_recurso is COLETA_MAX_PROC_CPU:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.cinco_processos_cpu
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].cinco_processos_cpu)
     elif tipo_recurso is COLETA_DISCO:
         for r in xrange(quantidade):
-            print r.formata_tempo()
-            print r.disco
+            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].disco)
+
+
+    return resposta_coleta
 
 
 # Funcao que salva os recursos de tempos em tempos
@@ -346,6 +344,21 @@ def salva_recursos():
         time.sleep(INTERVALO_TEMPO)
 
 
+def aceita(conn,addr):
+    
+    #recebe a mensagem vinda do cliente e repassa para funcao para processar as informacoes
+    while True:
+        msg = conn.recv(4096)
+
+        if len(msg) == 0:
+            break
+
+        conn.sendall(coleta_recurso(msg))
+
+    print 'conexao encerrada ', addr
+    conn.close()
+
+
 # tamanho da janela deslizante, deve ser 1000, mas pra teste 5
 TAMANHO_JANELA_DESLIZANTE = 5
 # tempo de espera 100 ms
@@ -354,14 +367,31 @@ INTERVALO_TEMPO = 0.01
 # estrutura para guardar os recursos coletados, essa estrutura funciona exatamente como uma janela deslizante
 recursos = deque("", TAMANHO_JANELA_DESLIZANTE)
 
+print 'Rodando Monitor'
+
 # cria nova thread para rodar a funcao que salva os recursos
 recursos_thread = Thread(target=salva_recursos)
 recursos_thread.start()
 
+#Configuracoes de socket do servidor
+HOST = '127.0.0.1'  # Symbolic name meaning all available interfaces
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # IPv4,tipo de socket
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind((HOST, PORT))  # liga o socket com IP e porta
+
+while 1:
+    s.listen(1)  # espera chegar pacotes na porta especificada
+    conn, addr = s.accept()  # Aceita uma conexao
+    print 'Aceitou uma conexao de ', addr
+    #Criacao de thread para nao travar o servidor e poder receber conexoes dos clientes a qualquer momento
+    t = Thread(target=aceita, args=(conn,addr,))
+    t.start()
+
+
 # Para testar - funcao que sempre pede um valor correspondente a um recurso para imprimir na tela
-while True:
+#while True:
     # le do teclado identificador do recurso
-    opcao_recurso = raw_input("Digite o recurso\n")
-    quant_recurso = raw_input("Quantidade de medicoes do recurso\n")
+#    opcao_recurso = raw_input("Digite o recurso\n")
+#    quant_recurso = raw_input("Quantidade de medicoes do recurso\n")
     # chama funcao para imprimir informacoes coletadas do recurso pedido
-    coleta_recurso(opcao_recurso,quant_recurso)
+#    coleta_recurso(opcao_recurso,quant_recurso)
