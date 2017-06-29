@@ -212,44 +212,48 @@ class Disco:
 
 
 # funcao que imprime um determinado recurso a partir de recursos ja coletados
-def coleta_recurso(tipo_recurso):
+def coleta_recurso(tipo_recurso,quantidade):
     global recursos
     tipo_recurso = int(tipo_recurso)
+    quantidade = int(quantidade)
     # copia da estrutura pois a original deve continuar coletando recursos
     rec = copy.copy(recursos)
+
+    if quantidade > len(rec):
+        quantidade = len(rec)
 
     # dependendo do tipo pedido e impresso a hora que foi coletado o recurso
     # e as informacoes do recurso
     if tipo_recurso is COLETA_CPU:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.cpu
     elif tipo_recurso is COLETA_MEMORIA:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.memoria
     elif tipo_recurso is COLETA_SWAP:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.swap
     elif tipo_recurso is COLETA_REDE:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.rede
     elif tipo_recurso is COLETA_NUM_PROCESSOS_ATIVOS:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.num_processos_ativos
     elif tipo_recurso is COLETA_MAX_PROC_MEM:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.cinco_processos_mem
     elif tipo_recurso is COLETA_MAX_PROC_CPU:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.cinco_processos_cpu
     elif tipo_recurso is COLETA_DISCO:
-        for r in rec:
+        for r in xrange(quantidade):
             print r.formata_tempo()
             print r.disco
 
@@ -257,7 +261,7 @@ def coleta_recurso(tipo_recurso):
 # Funcao que salva os recursos de tempos em tempos
 def salva_recursos():
     global recursos
-    c = 0
+
     while True:
         # cria um objeto do tipo Recursos
         r = Recursos()
@@ -322,10 +326,10 @@ def salva_recursos():
 
         for i in range(5):
             pmc.adiciona_processo(
-                Processo(proc_list[top_five_mem_proc[i]][0].pid, proc_list[top_five_mem_proc[i]][0].name(),
-                         proc_list[top_five_mem_proc[i]][0].username(),
-                         proc_list[top_five_mem_proc[i]][0].create_time(), proc_list[top_five_mem_proc[i]][1],
-                         proc_list[top_five_mem_proc[i]][2]))
+                Processo(proc_list[top_five_cpu_proc[i]][0].pid, proc_list[top_five_cpu_proc[i]][0].name(),
+                         proc_list[top_five_cpu_proc[i]][0].username(),
+                         proc_list[top_five_cpu_proc[i]][0].create_time(), proc_list[top_five_cpu_proc[i]][1],
+                         proc_list[top_five_cpu_proc[i]][2]))
 
         r.registra_cinco_proc_cpu(pmc)
 
@@ -358,5 +362,6 @@ recursos_thread.start()
 while True:
     # le do teclado identificador do recurso
     opcao_recurso = raw_input("Digite o recurso\n")
+    quant_recurso = raw_input("Quantidade de medicoes do recurso\n")
     # chama funcao para imprimir informacoes coletadas do recurso pedido
-    coleta_recurso(opcao_recurso)
+    coleta_recurso(opcao_recurso,quant_recurso)
