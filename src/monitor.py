@@ -38,13 +38,13 @@ class Recursos:
     def __str__(self):
         rec = self.formata_tempo()
         rec = rec + '\n' + self.cpu
-        rec = rec + '\n' +  self.memoria
-        rec = rec + '\n' +  self.swap
-        rec = rec + '\n' +  self.rede
-        rec = rec + '\n' +  'Numero de Processos ativos: ' + str(self.num_processos_ativos)
-        rec = rec + '\n' +  self.cinco_processos_mem
-        rec = rec + '\n' +  self.cinco_processos_cpu
-        rec = rec + '\n' +  self.disco
+        rec = rec + '\n' + self.memoria
+        rec = rec + '\n' + self.swap
+        rec = rec + '\n' + self.rede
+        rec = rec + '\n' + 'Numero de Processos ativos: ' + str(self.num_processos_ativos)
+        rec = rec + '\n' + self.cinco_processos_mem
+        rec = rec + '\n' + self.cinco_processos_cpu
+        rec = rec + '\n' + self.disco
         return rec
 
     # formata timestamp em data
@@ -92,9 +92,9 @@ class Memoria:
 
     # imprimi informacoes de memoria virtual
     def __str__(self):
-        rec =  'Memoria Virtual : '
-        rec = rec + '\n' +  '                : ' + str(self.mb) + ' MB'
-        rec = rec + '\n' +  '                : ' + str(self.porcento) + ' %'
+        rec = 'Memoria Virtual : '
+        rec = rec + '\n' + '                : ' + str(self.mb) + ' MB'
+        rec = rec + '\n' + '                : ' + str(self.porcento) + ' %'
         return rec
 
 
@@ -107,8 +107,8 @@ class MemoriaSwap:
     # imprimi informacoes de memoria swap
     def __str__(self):
         rec = 'Memoria Swap : '
-        rec = rec + '\n' +  '             : ' + str(self.mb) + ' MB'
-        rec = rec + '\n' +  '             : ' + str(self.porcento) + ' %'
+        rec = rec + '\n' + '             : ' + str(self.mb) + ' MB'
+        rec = rec + '\n' + '             : ' + str(self.porcento) + ' %'
         return rec
 
 
@@ -120,7 +120,7 @@ class Cpu:
     # imprimi informacoes de memoria
     def __str__(self):
         rec = 'CPU : '
-        rec = rec + '\n' +  '    : ' + str(self.porcento) + ' %'
+        rec = rec + '\n' + '    : ' + str(self.porcento) + ' %'
         return rec
 
 
@@ -137,9 +137,9 @@ class Rede:
     def __str__(self):
         rec = 'Rede : '
         for interface in self.rede:
-            rec = rec + '\n' +  '        Interface : ' + str(interface)
-            rec = rec + '\n' +  '                  : Pacotes Enviados : ' + str(self.rede[interface][0])
-            rec = rec + '\n' +  '                  : Pacotes Recebidos: ' + str(self.rede[interface][1])
+            rec = rec + '\n' + '        Interface : ' + str(interface)
+            rec = rec + '\n' + '                  : Pacotes Enviados : ' + str(self.rede[interface][0])
+            rec = rec + '\n' + '                  : Pacotes Recebidos: ' + str(self.rede[interface][1])
         return rec
 
 
@@ -156,11 +156,11 @@ class Processo:
     # imprimi informacoes do processo
     def __str__(self):
         rec = '      PID ' + str(self.pid)
-        rec = rec + '\n' +  '      Nome ' + str(self.nome)
-        rec = rec + '\n' +  '      Dono ' + str(self.dono)
-        rec = rec + '\n' +  '      Tempo ' + str(self.tempo)
-        rec = rec + '\n' +  '      Consumo de memoria ' + str(self.mem) + '%'
-        rec = rec + '\n' +  '      Consumo de cpu ' + str(self.cpu) + '%'
+        rec = rec + '\n' + '      Nome ' + str(self.nome)
+        rec = rec + '\n' + '      Dono ' + str(self.dono)
+        rec = rec + '\n' + '      Tempo ' + str(self.tempo)
+        rec = rec + '\n' + '      Consumo de memoria ' + str(self.mem) + '%'
+        rec = rec + '\n' + '      Consumo de cpu ' + str(self.cpu) + '%'
         return rec
 
 
@@ -177,7 +177,7 @@ class ProcessosMaxMemoria:
     def __str__(self):
         rec = 'Processos - Maior Consumo Memoria'
         for p in self.proc:
-            rec = rec + '\n' +  p
+            rec = rec + '\n' + str(p)
         return rec
 
 
@@ -194,7 +194,7 @@ class ProcessosMaxCpu:
     def __str__(self):
         rec = 'Processos - Maior Consumo Cpu'
         for p in self.proc:
-            rec = rec + '\n' +  p
+            rec = rec + '\n' + str(p)
         return rec
 
 
@@ -207,8 +207,8 @@ class Disco:
     # imprime os dados de disco
     def __str__(self):
         rec = 'Disco : '
-        rec = rec + '\n' +  '      : ' + str(self.gb) + ' Gb'
-        rec = rec + '\n' +  '      : ' + str(self.porcento) + ' %'
+        rec = rec + '\n' + '      : ' + str(self.gb) + ' Gb'
+        rec = rec + '\n' + '      : ' + str(self.porcento) + ' %'
         return rec
 
 
@@ -224,7 +224,7 @@ def coleta_recurso(msg):
     if quantidade > len(rec):
         quantidade = len(rec)
 
-    resposta_coleta = ''    
+    resposta_coleta = ''
     # dependendo do tipo pedido e impresso a hora que foi coletado o recurso
     # e as informacoes do recurso
     if tipo_recurso is COLETA_CPU:
@@ -251,7 +251,6 @@ def coleta_recurso(msg):
     elif tipo_recurso is COLETA_DISCO:
         for r in xrange(quantidade):
             resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].disco)
-
 
     return resposta_coleta
 
@@ -344,9 +343,8 @@ def salva_recursos():
         time.sleep(INTERVALO_TEMPO)
 
 
-def aceita(conn,addr):
-    
-    #recebe a mensagem vinda do cliente e repassa para funcao para processar as informacoes
+def aceita(conn, addr):
+    # recebe a mensagem vinda do cliente e repassa para funcao para processar as informacoes
     while True:
         msg = conn.recv(4096)
 
@@ -373,7 +371,7 @@ print 'Rodando Monitor'
 recursos_thread = Thread(target=salva_recursos)
 recursos_thread.start()
 
-#Configuracoes de socket do servidor
+# Configuracoes de socket do servidor
 HOST = '127.0.0.1'  # Symbolic name meaning all available interfaces
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # IPv4,tipo de socket
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -383,15 +381,15 @@ while 1:
     s.listen(1)  # espera chegar pacotes na porta especificada
     conn, addr = s.accept()  # Aceita uma conexao
     print 'Aceitou uma conexao de ', addr
-    #Criacao de thread para nao travar o servidor e poder receber conexoes dos clientes a qualquer momento
-    t = Thread(target=aceita, args=(conn,addr,))
+    # Criacao de thread para nao travar o servidor e poder receber conexoes dos clientes a qualquer momento
+    t = Thread(target=aceita, args=(conn, addr,))
     t.start()
 
 
 # Para testar - funcao que sempre pede um valor correspondente a um recurso para imprimir na tela
-#while True:
-    # le do teclado identificador do recurso
+# while True:
+# le do teclado identificador do recurso
 #    opcao_recurso = raw_input("Digite o recurso\n")
 #    quant_recurso = raw_input("Quantidade de medicoes do recurso\n")
-    # chama funcao para imprimir informacoes coletadas do recurso pedido
+# chama funcao para imprimir informacoes coletadas do recurso pedido
 #    coleta_recurso(opcao_recurso,quant_recurso)

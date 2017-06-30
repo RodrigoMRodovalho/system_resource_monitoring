@@ -101,10 +101,9 @@ if servidor_conectado:
     s_servidor_contectado.release()
     while True:
         # le do teclado identificador do recurso
-        opcao_recurso = raw_input("Digite o recurso\n")
-        quant_recurso = raw_input("Quantidade de medicoes do recurso\n")
+        msg = raw_input("Digite a operacao\n")
         # chama funcao para imprimir informacoes coletadas do recurso pedido
-        envia_mensagem_servidor(str('recurso,127.0.0.1,' + str(opcao_recurso) + ',' + str(quant_recurso) + ',0'))
+        envia_mensagem_servidor(str(msg))
 else:
     print 'erro ao conectar servidor'
 s_servidor_contectado.release()

@@ -34,7 +34,7 @@ def cadastra_maquina(ip):
 
         maquina_nao_cadastrada = True
         # verifica se a maquina ja esta cadastrada
-        for maquina_ip in arquivo_usuarios:
+        for maquina_ip in arquivo_maquinas_cadastradas:
             if maquina_ip == ip:
                 maquina_nao_cadastrada = False
                 break
@@ -66,7 +66,8 @@ def lista_maquinas_cadastradas():
     maquinas = ''
     # percorre o arquivo e obtem os ips das maquinas cadastradas
     for linha in arquivo_maquinas_cadastradas:
-        maquinas = maquinas + ','
+        linha = linha.replace("\n","")
+        maquinas = maquinas + linha + ","
 
     arquivo_maquinas_cadastradas.close()
     s_arquivo_cadastro_maquinas.release()
@@ -79,6 +80,7 @@ def lista_recurso_maquina(conn, msg):
     socket_monitor = conecta_monitor(msg[1])
     if socket_monitor is None:
         print 'erro ao conectar'
+        conn.sendall('erro ao conectar monitor')
     else:
         socket_monitor.sendall(str(msg[2] + ',' + msg[3] + ',' + msg[4]))
         resposta_monitor = socket_monitor.recv(4096)
@@ -106,7 +108,7 @@ def desconecta_monitor(monitor_socket):
 
 # funcao que recebe requisicao
 def processa_requisicao(msg, conn, addr, numero_requisicao):
-    marca_tempo = datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y - %H:%M:%S.%f")
+    marca_tempo = datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y - %H:%M:%S")
 
     print '###### Requisicao ' + numero_requisicao + ' ######'
     print '-Marca de Tempo: ' + str(marca_tempo)
