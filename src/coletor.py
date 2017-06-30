@@ -66,7 +66,7 @@ def lista_maquinas_cadastradas():
     maquinas = ''
     # percorre o arquivo e obtem os ips das maquinas cadastradas
     for linha in arquivo_maquinas_cadastradas:
-        linha = linha.replace("\n","")
+        linha = linha.replace("\n", "")
         maquinas = maquinas + linha + ","
 
     arquivo_maquinas_cadastradas.close()
@@ -128,7 +128,6 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
         conn.sendall(lista_maquinas_cadastradas())
     elif 'recurso' in msg:
         msg = msg.split(',')
-        # todo imprimir
         print '      -Pedido de monitoramento:'
         print '            IP do monitor: ' + str(msg[1])
         print '            Recurso: ' + str(msg[2])
@@ -154,7 +153,6 @@ def aceita(conn, addr):
     while True:
         msg = conn.recv(4096)
 
-        numero_requisicao = None
         # incrementa o numero de requisicoes atendidas
         s_numero_requisicoes_atendidas.acquire()
         numero_requisicao = str(numero_requsicoes_atendidas)
@@ -188,9 +186,6 @@ s_arquivo_cadastro_maquinas = BoundedSemaphore()
 usuarios_conectados = {}
 # semaforo de controle para estrutura de usuarios conectados
 s_usuarios_conectados = BoundedSemaphore()
-
-# TODO- Criar socket servidor
-# TODO - Criar socket clientecbv
 
 # Configuracoes de socket do servidor
 HOST = '127.0.0.1'  # Symbolic name meaning all available interfaces
