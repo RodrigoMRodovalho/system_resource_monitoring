@@ -72,7 +72,7 @@ class JanelaColetaRecurso(wx.Dialog):
     def __init__(self, parent):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
         super(JanelaColetaRecurso, self).__init__(parent, -1, 'Coleta de Recurso Monitorado',
-                                                             style=style)
+                                                  style=style)
         self.ip_maquina_texto = wx.StaticText(self, -1, "Digite o IP da maquina monitorada")
         self.ip_maquina = wx.TextCtrl(self, value="127.0.0.1")
         self.ip_maquina.SetInitialSize((200, 20))
@@ -90,7 +90,6 @@ class JanelaColetaRecurso(wx.Dialog):
 
         self.recurso_texto = wx.StaticText(self, -1, "Escolha o recurso")
         self.escolhe_recurso = wx.Choice(self, choices=recursos)
-        #self.escolhe_recurso.Bind(wx.EVT_CHOICE, self.recurso_escolhido)
 
         self.quantidade_texto = wx.StaticText(self, -1, "Digite a quantidade de medicoes")
         self.quantidade = wx.TextCtrl(self, value="")
@@ -161,6 +160,39 @@ class TelaSistema(wx.Frame):
 
         self.botao_sair = wx.Button(self, label="Sair", pos=(20, 150))
         self.Bind(wx.EVT_BUTTON, botao_sair, self.botao_sair)
+
+    # funcao que cria uma janela de aviso
+    def mostra_janela_aviso(self, aviso):
+        j_aviso = JanelaAviso(None, aviso)
+        j_aviso.Center()
+        j_aviso.ShowModal()
+        j_aviso.Destroy()
+
+    def mostra_erro(self):
+        self.mostra_janela_aviso('Ocorreu um erro')
+
+    def mostra_cadastro(self, msg):
+
+        if 'NOk' in msg:
+            self.mostra_janela_aviso('Nao foi possivel cadastrar maquina')
+        else:
+            self.mostra_janela_aviso('Maquina cadastrada com sucesso')
+
+    def mostra_lista_maquinas(self, msg):
+
+        if msg == 'lista,':
+            self.mostra_janela_aviso('Nenhuma maquina cadastrada')
+        else:
+            j_lista_maquinas = JanelaListaMaquinasCadastradas(None, msg)
+            j_lista_maquinas.Center()
+            j_lista_maquinas.ShowModal()
+            j_lista_maquinas.Destroy()
+
+    def mostra_recurso(self, msg):
+        j_lista_maquinas = JanelaRecursosColetados(None, msg)
+        j_lista_maquinas.Center()
+        j_lista_maquinas.ShowModal()
+        j_lista_maquinas.Destroy()
 
 
 # funcao de evento de clique do botao para cadastrar usuario
@@ -280,8 +312,19 @@ def estabelece_conexao_coletor(host_ip, porta):
 # Thread que escuta as mensagens vindas do coletor
 def escuta_coletor():
     while True:
-        data = coletor_sock.recv(4096)
-        log_mensagem_recebida(data)
+        msg = coletor_sock.recv(4096)
+        log_mensagem_recebida(msg)
+
+        if msg == 'NOk':
+            wx.CallAfter(tela.mostra_erro, '')
+        elif 'cadastra' in msg:
+            wx.CallAfter(tela.mostra_cadastro, str(msg))
+        elif 'lista' in msg:
+            wx.CallAfter(tela.mostra_lista_maquinas, str(msg))
+        elif 'recurso' in msg:
+            wx.CallAfter(tela.mostra_recurso, str(msg))
+        else:
+            print 'mensagem desconhecida'
 
 
 host_ip = '127.0.0.1'
