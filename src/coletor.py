@@ -35,7 +35,7 @@ def cadastra_maquina(ip):
         maquina_nao_cadastrada = True
         # verifica se a maquina ja esta cadastrada
         for maquina_ip in arquivo_maquinas_cadastradas:
-            if maquina_ip == ip:
+            if ip in maquina_ip:
                 maquina_nao_cadastrada = False
                 break
 
@@ -63,11 +63,11 @@ def lista_maquinas_cadastradas():
     s_arquivo_cadastro_maquinas.acquire()
     arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, 'r')
 
-    maquinas = ''
+    maquinas = 'lista'
     # percorre o arquivo e obtem os ips das maquinas cadastradas
     for linha in arquivo_maquinas_cadastradas:
         linha = linha.replace("\n", "")
-        maquinas = maquinas + linha + ","
+        maquinas = "," + maquinas + linha 
 
     arquivo_maquinas_cadastradas.close()
     s_arquivo_cadastro_maquinas.release()
@@ -119,9 +119,9 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
         msg = msg.split(',')
         print '      Cadastro de maquina: ' + str(msg[1])
         if cadastra_maquina(msg[1]):
-            conn.sendall('Ok')
+            conn.sendall('cadastra,Ok')
         else:
-            conn.sendall('NOk')
+            conn.sendall('cadastra,NOk')
 
     elif 'lista' in msg:
         print '      Listagem de maquinas cadastradas'
