@@ -88,7 +88,7 @@ def lista_recurso_maquina(conn, msg):
     else:
         socket_monitor.sendall(str(msg[2] + ',' + msg[3]))
         resposta_monitor = socket_monitor.recv(4096)
-        conn.sendall(str('recurso,' + resposta_monitor))
+        conn.sendall(str('recurso,' + msg[1] + ',' + resposta_monitor))
         desconecta_monitor(socket_monitor)
 
 

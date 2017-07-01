@@ -140,13 +140,19 @@ class JanelaListaMaquinasCadastradas(wx.Dialog):
 
 class JanelaRecursosColetados(wx.Dialog):
     def __init__(self, parent, recurso_coletado):
-        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        super(JanelaRecursosColetados, self).__init__(parent, -1, 'Recurso coletado de IP', style=style)
 
-        # todo implement body
+        recurso_coletado = recurso_coletado.split(',')
+
+        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        super(JanelaRecursosColetados, self).__init__(parent, -1, str('Recurso coletado - ' + recurso_coletado[1]), style=style)
+
+        self.recurso_texto = wx.TextCtrl(self, -1,str(recurso_coletado[2]),
+                               style=wx.TE_MULTILINE | wx.BORDER_SUNKEN | wx.TE_READONLY |
+                                     wx.TE_RICH2, size=(400, 400))
 
         botoes = self.CreateButtonSizer(wx.OK)
         sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.recurso_texto, 0, wx.EXPAND | wx.ALL, 5)
         sizer.Add(botoes, 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizerAndFit(sizer)
 
