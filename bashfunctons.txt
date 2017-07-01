@@ -1,0 +1,14 @@
+pss(){
+	kap
+	sudo gnome-terminal --working-directory=/home/rrodovalho/systemmonitoring/src/ \
+    --tab -e 'python monitor.py' \
+    --tab -e 'python coletor.py' \
+    --tab -e 'python cliente.py'
+}
+
+#kill all python
+kap(){
+	pidof /usr/bin/python2.7 > pPID.txt
+	pPID=$(cat pPID.txt)
+	sudo kill -9 $pPID
+}
