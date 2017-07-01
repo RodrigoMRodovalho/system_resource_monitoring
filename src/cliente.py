@@ -4,6 +4,7 @@ import sys
 import linecache
 from datetime import datetime
 import wx
+import wx.grid as gridlib
 
 
 # Classe que representa a janela de aviso
@@ -118,11 +119,21 @@ class JanelaListaMaquinasCadastradas(wx.Dialog):
         super(JanelaListaMaquinasCadastradas, self).__init__(parent, -1, 'Listagem de maquinas cadastradas',
                                                              style=style)
 
-        # todo implement body
+        listagem_maquinas = listagem_maquinas.replace('lista,', '').split(',')
+        tabela = gridlib.Grid(self,size=(320,300))
+        tabela.CreateGrid(len(listagem_maquinas) - 1, 1)
+        tabela.SetColLabelValue(0, "IP")
+
+        linha = 0
+        for maquina_ip in listagem_maquinas:
+            tabela.SetCellValue(linha, 0, maquina_ip)
+            tabela.SetReadOnly(linha, 0, True)
+            linha = linha + 1
 
         botoes = self.CreateButtonSizer(wx.OK)
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(botoes, 0, wx.EXPAND | wx.ALL, 5)
+        sizer.Add(tabela, 0, wx.CENTER | wx.ALL, 5)
+        sizer.Add(botoes, 0, wx.CENTER | wx.ALL, 5)
         self.SetSizerAndFit(sizer)
 
 
