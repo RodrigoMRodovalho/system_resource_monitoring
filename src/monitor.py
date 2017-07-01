@@ -83,6 +83,8 @@ class Recursos:
     def registra_disco(self, disco):
         self.disco = disco
 
+    def pega_num_processo_ativo(self):
+        return 'Numero de Processos ativos: ' + str(self.num_processos_ativos)
 
 # Classe que representa a memoria virtual
 class Memoria:
@@ -155,12 +157,12 @@ class Processo:
 
     # imprimi informacoes do processo
     def __str__(self):
-        rec = '      PID ' + str(self.pid)
-        rec = rec + '\n' + '      Nome ' + str(self.nome)
-        rec = rec + '\n' + '      Dono ' + str(self.dono)
-        rec = rec + '\n' + '      Tempo ' + str(self.tempo)
-        rec = rec + '\n' + '      Consumo de memoria ' + str(self.mem) + '%'
-        rec = rec + '\n' + '      Consumo de cpu ' + str(self.cpu) + '%'
+        rec = '      PID: ' + str(self.pid)
+        rec = rec + '\n' + '      Nome: ' + str(self.nome)
+        rec = rec + '\n' + '      Dono: ' + str(self.dono)
+        rec = rec + '\n' + '      Tempo de criacao: ' + str(datetime.datetime.fromtimestamp(self.tempo).strftime("Data: %d/%m/%Y - Hora: %H:%M:%S"))
+        rec = rec + '\n' + '      Consumo de memoria: ' + str(self.mem) + '%'
+        rec = rec + '\n' + '      Consumo de cpu: ' + str(self.cpu) + '%\n\n'
         return rec
 
 
@@ -192,7 +194,7 @@ class ProcessosMaxCpu:
 
     # imprime os processos que mais consomem cpu
     def __str__(self):
-        rec = 'Processos - Maior Consumo Cpu'
+        rec = 'Processos - Maior Consumo CPU'
         for p in self.proc:
             rec = rec + '\n' + str(p)
         return rec
@@ -217,9 +219,13 @@ def coleta_recurso(msg):
     global recursos
     msg = msg.split(',')
     tipo_recurso = int(msg[0])
-    quantidade = int(msg[1])
     # copia da estrutura pois a original deve continuar coletando recursos
     rec = copy.copy(recursos)
+
+    if msg[1] == '':
+        quantidade = TAMANHO_JANELA_DESLIZANTE
+    else:
+        quantidade = int(msg[1])
 
     if quantidade > len(rec):
         quantidade = len(rec)
@@ -246,7 +252,7 @@ def coleta_recurso(msg):
     elif tipo_recurso is COLETA_NUM_PROCESSOS_ATIVOS:
         for r in xrange(quantidade):
             aux = rec.pop()
-            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.num_processos_ativos) + '\n\n'
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.pega_num_processo_ativo()) + '\n\n'
     elif tipo_recurso is COLETA_MAX_PROC_MEM:
         for r in xrange(quantidade):
             aux = rec.pop()
@@ -321,7 +327,7 @@ def salva_recursos():
             pmm.adiciona_processo(
                 Processo(proc_list[top_five_mem_proc[i]][0].pid, proc_list[top_five_mem_proc[i]][0].name(),
                          proc_list[top_five_mem_proc[i]][0].username(),
-                         proc_list[top_five_mem_proc[i]][0].create_time(), proc_list[top_five_mem_proc[i]][1],
+                         proc_list[top_five_mem_proc[i]][0].create_time(), str("%.1f" % (proc_list[top_five_mem_proc[i]][1])),
                          proc_list[top_five_mem_proc[i]][2]))
 
         r.registra_cinco_proc_mem(pmm)
@@ -333,7 +339,7 @@ def salva_recursos():
             pmc.adiciona_processo(
                 Processo(proc_list[top_five_cpu_proc[i]][0].pid, proc_list[top_five_cpu_proc[i]][0].name(),
                          proc_list[top_five_cpu_proc[i]][0].username(),
-                         proc_list[top_five_cpu_proc[i]][0].create_time(), proc_list[top_five_cpu_proc[i]][1],
+                         proc_list[top_five_cpu_proc[i]][0].create_time(), str("%.1f" % (proc_list[top_five_cpu_proc[i]][1])),
                          proc_list[top_five_cpu_proc[i]][2]))
 
         r.registra_cinco_proc_cpu(pmc)
@@ -342,7 +348,7 @@ def salva_recursos():
         uso_disco = psutil.disk_usage('/')
         tam_total = uso_disco.total / 1024.0 / 1024.0 / 1024.0
         tam_usado = uso_disco.used / 1024.0 / 1024.0 / 1024.0
-        r.registra_disco(Disco(str(tam_usado) + '/' + str(tam_total), str(uso_disco.percent)))
+        r.registra_disco(Disco(str("%.1f" % tam_usado) + '/' + str("%.1f" % tam_total), str("%.1f" % (uso_disco.percent))))
 
         # Registra os recursos coletados na estrutura que guarda todos os registros
         recursos.append(r)
