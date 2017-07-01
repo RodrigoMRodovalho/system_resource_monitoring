@@ -115,7 +115,7 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
     marca_tempo = datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y - %H:%M:%S")
 
     print '###### Requisicao ' + numero_requisicao + ' ######'
-    print '-Marca de Tempo: ' + str(marca_tempo)
+    print '-Marca de Tempo: ' + str(marca_tempo) + 'h'
     print '-Usuario\n      -IP: ' + str(addr[0]) + '\n      -PORTA: ' + str(addr[1])
     print '-Operacao:'
 

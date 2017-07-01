@@ -154,24 +154,32 @@ class JanelaRecursosColetados(wx.Dialog):
 # Classe que representa a tela principal
 class TelaSistema(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title="Monitoramento de Sistema UFF", size=(400, 280))
+        wx.Frame.__init__(self, parent=None, title="SysMonitorUFF", size=(450, 200))
 
         # Configuracao de elementos de tela
+        self.panel = wx.Panel(self)
 
         # Configuracoes de textos, botoes e os eventos de clique dos botoes
-        self.bem_vindo = wx.StaticText(self, label="Bem vindo ao Sistema de Monitoramento de maquinas - UFF",
-                                       pos=(20, 10))
-        self.botao_cadastrar_maquina = wx.Button(self, label="Cadastrar Maquina", pos=(20, 60))
+        self.bem_vindo = wx.StaticText(self.panel, label="Bem vindo ao Sistema de Monitoramento de Maquinas - UFF",)
+        self.botao_cadastrar_maquina = wx.Button(self.panel, label="Cadastrar Maquina",size=(250,30))
         self.Bind(wx.EVT_BUTTON, botao_cadastrar_maquina, self.botao_cadastrar_maquina)
 
-        self.botao_listar_maquinas = wx.Button(self, label="Listar Maquinas Cadastradas", pos=(20, 90))
+        self.botao_listar_maquinas = wx.Button(self.panel, label="Listar Maquinas Cadastradas",size=(250,30))
         self.Bind(wx.EVT_BUTTON, botao_listar_maquinas, self.botao_listar_maquinas)
 
-        self.botao_coletar_recurso = wx.Button(self, label="Coletar Recurso", pos=(20, 120))
+        self.botao_coletar_recurso = wx.Button(self.panel, label="Coletar Recurso",size=(250,30))
         self.Bind(wx.EVT_BUTTON, botao_coletar_recurso, self.botao_coletar_recurso)
 
-        self.botao_sair = wx.Button(self, label="Sair", pos=(20, 150))
+        self.botao_sair = wx.Button(self.panel, label="Sair",size=(250,30))
         self.Bind(wx.EVT_BUTTON, botao_sair, self.botao_sair)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(self.bem_vindo, 0, wx.CENTER | wx.ALL, 5)
+        vbox.Add(self.botao_cadastrar_maquina, 0, wx.CENTER | wx.ALL, 5)
+        vbox.Add(self.botao_listar_maquinas, 0, wx.CENTER | wx.ALL, 5)
+        vbox.Add(self.botao_coletar_recurso, 0, wx.CENTER | wx.ALL, 5)
+        vbox.Add(self.botao_sair, 0, wx.CENTER | wx.ALL, 5)
+        self.panel.SetSizer(vbox)
 
     # funcao que cria uma janela de aviso
     def mostra_janela_aviso(self, aviso):
@@ -370,6 +378,7 @@ try:
             t.start()
             # criacao da tela principal
             tela = TelaSistema()
+            tela.Center()
             tela.Show()
         else:
             # cria janela de aviso para mostrar que nao foi possivel conectar
