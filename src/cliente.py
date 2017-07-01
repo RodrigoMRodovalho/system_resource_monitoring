@@ -215,10 +215,14 @@ class TelaSistema(wx.Frame):
             j_lista_maquinas.Destroy()
 
     def mostra_recurso(self, msg):
-        j_lista_maquinas = JanelaRecursosColetados(None, msg)
-        j_lista_maquinas.Center()
-        j_lista_maquinas.ShowModal()
-        j_lista_maquinas.Destroy()
+
+        if 'NOk' in msg:
+            self.mostra_janela_aviso('Nao foi possivel conectar a maquina')
+        else:
+            j_lista_maquinas = JanelaRecursosColetados(None, msg)
+            j_lista_maquinas.Center()
+            j_lista_maquinas.ShowModal()
+            j_lista_maquinas.Destroy()
 
 
 # funcao de evento de clique do botao para cadastrar usuario
