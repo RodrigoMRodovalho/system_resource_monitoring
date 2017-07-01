@@ -121,8 +121,9 @@ class JanelaListaMaquinasCadastradas(wx.Dialog):
 
         listagem_maquinas = listagem_maquinas.replace('lista,', '').split(',')
         tabela = gridlib.Grid(self,size=(320,300))
-        tabela.CreateGrid(len(listagem_maquinas) - 1, 1)
+        tabela.CreateGrid(len(listagem_maquinas), 1)
         tabela.SetColLabelValue(0, "IP")
+        tabela.SetColSize(0, 130)
 
         linha = 0
         for maquina_ip in listagem_maquinas:
