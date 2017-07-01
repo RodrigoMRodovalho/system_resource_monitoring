@@ -49,7 +49,7 @@ class Recursos:
 
     # formata timestamp em data
     def formata_tempo(self):
-        return datetime.datetime.fromtimestamp(self.tempo).strftime("%d/%m/%Y - %H:%M:%S.%f")
+        return datetime.datetime.fromtimestamp(self.tempo).strftime("*Data: %d/%m/%Y - Hora: %H:%M:%S.%f")
 
     # Salva dado de cpu
     def registra_cpu(self, cpu):
@@ -229,28 +229,36 @@ def coleta_recurso(msg):
     # e as informacoes do recurso
     if tipo_recurso is COLETA_CPU:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].cpu)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.cpu) + '\n\n'
     elif tipo_recurso is COLETA_MEMORIA:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].memoria)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.memoria) + '\n\n'
     elif tipo_recurso is COLETA_SWAP:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].swap)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.swap) + '\n\n'
     elif tipo_recurso is COLETA_REDE:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].rede)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.rede) + '\n\n'
     elif tipo_recurso is COLETA_NUM_PROCESSOS_ATIVOS:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].num_processos_ativos)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.num_processos_ativos) + '\n\n'
     elif tipo_recurso is COLETA_MAX_PROC_MEM:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].cinco_processos_mem)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.cinco_processos_mem) + '\n\n'
     elif tipo_recurso is COLETA_MAX_PROC_CPU:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].cinco_processos_cpu)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.cinco_processos_cpu) + '\n\n'
     elif tipo_recurso is COLETA_DISCO:
         for r in xrange(quantidade):
-            resposta_coleta = resposta_coleta + str(rec[r].formata_tempo()) + '\n' + str(rec[r].disco)
+            aux = rec.pop()
+            resposta_coleta = resposta_coleta + str(aux.formata_tempo()) + '\n' + str(aux.disco) + '\n\n'
 
     return resposta_coleta
 
@@ -358,7 +366,7 @@ def aceita(conn, addr):
 
 
 # tamanho da janela deslizante, deve ser 1000, mas pra teste 5
-TAMANHO_JANELA_DESLIZANTE = 5
+TAMANHO_JANELA_DESLIZANTE = 50
 # tempo de espera 100 ms
 INTERVALO_TEMPO = 0.01
 
