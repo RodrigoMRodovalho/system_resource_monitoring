@@ -6,7 +6,20 @@ from datetime import datetime
 import wx
 
 
-# Classe que representa a janela para inserir os dados do servidor
+#Classe que representa a janela de aviso
+class JanelaAviso(wx.Dialog):
+    def __init__(self, parent, texto):
+        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        super(JanelaAviso, self).__init__(parent, -1, 'Aviso', style=style)
+        # Configuracao de elementos de tela
+        self.aviso_texto = wx.StaticText(self, -1, texto)
+        self.botoes = self.CreateButtonSizer(wx.OK)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.aviso_texto, 0, wx.ALL, 5)
+        sizer.Add(self.botoes, 0, wx.EXPAND | wx.ALL, 5)
+        self.SetSizerAndFit(sizer)
+
+# Classe que representa a janela para inserir os dados do coletor
 class JanelaDadoColetor(wx.Dialog):
     def __init__(self, parent):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
@@ -56,15 +69,41 @@ class JanelaCadastrarMaquina(wx.Dialog):
 class JanelaColetaRecurso(wx.Dialog):
     pass
 
+class JanelaListaMaquinasCadastradas(wx.Dialog):
+    def __init__(self, parent, listagem_maquinas):
+        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        super(JanelaListaMaquinasCadastradas, self).__init__(parent, -1, 'Listagem de maquinas cadastradas', style=style)
+
+        #todo implement body
+
+        botoes = self.CreateButtonSizer(wx.OK)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(botoes, 0, wx.EXPAND | wx.ALL, 5)
+        self.SetSizerAndFit(sizer)
+
+
+class JanelaRecursosColetados(wx.Dialog):
+    def __init__(self, parent, recurso_coletado):
+        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        super(JanelaRecursosColetados, self).__init__(parent, -1, 'Recurso coletado de IP', style=style)
+
+
+        #todo implement body
+
+        botoes = self.CreateButtonSizer(wx.OK)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(botoes, 0, wx.EXPAND | wx.ALL, 5)
+        self.SetSizerAndFit(sizer)
+
 # Classe que representa a tela principal
-class TelaLeilao(wx.Frame):
+class TelaSistema(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, parent=None, title="Monitoramento de Sistema UFF", size=(1000, 280))
 
         # Configuracao de elementos de tela
 
         # Configuracoes de textos, botoes e os eventos de clique dos botoes
-        self.bem_vindo = wx.StaticText(self, label="Bem vindo ao Monitoramento de Sistema UFF", pos=(20, 10))
+        self.bem_vindo = wx.StaticText(self, label="Bem vindo ao Sistema de Monitoramento de maquinas - UFF", pos=(20, 10))
         self.botao_cadastrar_maquina = wx.Button(self, label="Cadastrar Maquina", pos=(20, 60))
         self.Bind(wx.EVT_BUTTON, botao_cadastrar_maquina, self.botao_cadastrar_maquina)
 
@@ -92,7 +131,7 @@ def botao_cadastrar_maquina(evento):
     janela.Destroy()
 
     if dados is not None:
-        envia_mensagem_coletor(str('cadastro,' + dados))
+        envia_mensagem_coletor(str('cadastra,' + dados))
 
 
 # funcao de evento de clique do botao para cadastrar usuario
@@ -116,7 +155,8 @@ def botao_coletar_recurso(evento):
         envia_mensagem_coletor(str('recurso,' + dados[0] + ',' + dados[1] + ',' + dados[2]))
 
 def botao_sair(evento):
-    pass
+    global tela
+    tela.Destroy()
 
 # Soluca da internet para ver todas as informacoes sobre o erro dentro do except:
 def PrintException():
@@ -129,10 +169,10 @@ def PrintException():
     print 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
 
 
-# Funcao que envia mensagem para o servidor
+# Funcao que envia mensagem para o coletor
 def envia_mensagem_coletor(mensagem):
     print >> sys.stderr, 'enviando ', mensagem, '  as ', datetime.now().time()
-    servidor_sock.sendall(mensagem)
+    coletor_sock.sendall(mensagem)
 
 
 # Imprime as mensagens recebidas
@@ -140,104 +180,105 @@ def log_mensagem_recebida(mensagem):
     print >> sys.stderr, 'recebido ', mensagem, '  at ', datetime.now().time()
 
 
-# Funcao que guarda nas variaveis o IP e Porta do servidor
-def configura_servidor(host, port):
+# Funcao que guarda nas variaveis o IP e Porta do coletor
+def configura_coletor(host, port):
     global host_ip, porta
     host_ip = host
     porta = port
 
 
-# Funcao que conecta socket do servidor
-def conecta_servidor():
-    global servidor_sock
+# Funcao que conecta socket do coletor
+def conecta_coletor():
+    global coletor_sock
     try:
         # Cria socket para conexao
-        servidor_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        coletor_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Configura endereco - IP e Porta
-        endereco_servidor = (host_ip, porta)
-        print >> sys.stderr, 'Conectando em %s port %s' % endereco_servidor
-        servidor_sock.connect(endereco_servidor)
+        endereco_coletor = (host_ip, porta)
+        print >> sys.stderr, 'Conectando em %s port %s' % endereco_coletor
+        coletor_sock.connect(endereco_coletor)
         print >> sys.stderr, 'Conectado'
         return True
     except:
         return False
 
 
-# Funcao que desconecta socket do servidor
-def desconecta_servidor():
-    servidor_sock.close()
+# Funcao que desconecta socket do coletor
+def desconecta_coletor():
+    coletor_sock.close()
 
 
-# Funcao que realiza comunicacao com servidor
-def estabelece_conexao_servidor(host_ip, porta):
-    global s_servidor_contectado, servidor_conectado, mensagem_erro
+# Funcao que realiza comunicacao com coletor
+def estabelece_conexao_coletor(host_ip, porta):
+    global s_coletor_contectado, coletor_conectado, mensagem_erro
 
-    # Configura IP e Porta do Servidor
-    configura_servidor(host_ip, porta)
-    # Verifica se conecta com o servidor
-    if conecta_servidor():
+    # Configura IP e Porta do coletor
+    configura_coletor(host_ip, porta)
+    # Verifica se conecta com o coletor
+    if conecta_coletor():
         # mensagem_erro = None
-        # Libera a variavel que controla se conectou o servidor ou se deu erro
-        s_servidor_contectado.acquire()
-        servidor_conectado = True
-        s_servidor_contectado.release()
+        # Libera a variavel que controla se conectou o coletor ou se deu erro
+        s_coletor_contectado.acquire()
+        coletor_conectado = True
+        s_coletor_contectado.release()
     else:
-        # mensagem_erro = 'Nao foi possivel conectar ao servidor'
-        # Libera a variavel que controla se conectou o servidor ou se deu erro
-        s_servidor_contectado.acquire()
-        servidor_conectado = False
-        s_servidor_contectado.release()
+        # mensagem_erro = 'Nao foi possivel conectar ao coletor'
+        # Libera a variavel que controla se conectou o coletor ou se deu erro
+        s_coletor_contectado.acquire()
+        coletor_conectado = False
+        s_coletor_contectado.release()
 
 
-# Thread que escuta as mensagens vindas do servidor
-def escuta_servidor():
+# Thread que escuta as mensagens vindas do coletor
+def escuta_coletor():
     while True:
-        data = servidor_sock.recv(4096)
+        data = coletor_sock.recv(4096)
         log_mensagem_recebida(data)
 
 
 host_ip = '127.0.0.1'
 porta = 50053
-# Declaracao do socket de conexao com servidor
-servidor_sock = None
-servidor_conectado = False
-s_servidor_contectado = BoundedSemaphore()
+# Declaracao do socket de conexao com coletor
+coletor_sock = None
+coletor_conectado = False
+s_coletor_contectado = BoundedSemaphore()
 
+tela = None
 
 try:
 
     #cria interface grafica
     app = wx.App(False)
 
-    #cria janela com dados do servidor
+    #cria janela com dados do coletor
     janela = JanelaDadoColetor(None)
     janela.Center()
     if janela.ShowModal() == wx.ID_OK:
-        dados_servidor = janela.pegar_dados_servidor().split(',')
-        host_ip = dados_servidor[0]
-        porta = int(dados_servidor[1])
-        estabelece_conexao_servidor(host_ip, porta)
-        #conecta servidor
-        s_servidor_contectado.acquire()
-        if servidor_conectado:
+        dados_coletor = janela.pegar_dados_coletor().split(',')
+        host_ip = dados_coletor[0]
+        porta = int(dados_coletor[1])
+        estabelece_conexao_coletor(host_ip, porta)
+        #conecta coletor
+        s_coletor_contectado.acquire()
+        if coletor_conectado:
             #executa thread para escutar as mensagens
-            t = Thread(target=escuta_servidor)
+            t = Thread(target=escuta_coletor)
             t.setDaemon(True)
             t.start()
             #criacao da tela principal
-            tela = TelaLeilao()
+            tela = TelaSistema()
             tela.Show()
         else:
             #cria janela de aviso para mostrar que nao foi possivel conectar
-            janela_aviso = JanelaAviso(None, 'Nao foi possivel conectar ao servidor')
+            janela_aviso = JanelaAviso(None, 'Nao foi possivel conectar ao coletor')
             janela_aviso.Center()
             janela_aviso.ShowModal()
             janela_aviso.Destroy()
-        s_servidor_contectado.release()
+        s_coletor_contectado.release()
     janela.Destroy()
     app.MainLoop()
 
 # Por final, desconecta serviddor
 finally:
-    desconecta_servidor()
+    desconecta_coletor()
 
