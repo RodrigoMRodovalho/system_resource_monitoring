@@ -63,11 +63,15 @@ def lista_maquinas_cadastradas():
     s_arquivo_cadastro_maquinas.acquire()
     arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, 'r')
 
-    maquinas = 'lista'
+    maquinas = ''
     # percorre o arquivo e obtem os ips das maquinas cadastradas
     for linha in arquivo_maquinas_cadastradas:
         linha = linha.replace("\n", "")
-        maquinas = "," + maquinas + linha 
+        maquinas = maquinas + linha + ','
+
+    #remove ultimo ','
+    if len(maquinas) > 0:
+        maquinas = maquinas[:-1]
 
     arquivo_maquinas_cadastradas.close()
     s_arquivo_cadastro_maquinas.release()
@@ -82,7 +86,7 @@ def lista_recurso_maquina(conn, msg):
         print 'erro ao conectar'
         conn.sendall('recurso,NOk')
     else:
-        socket_monitor.sendall(str(msg[2] + ',' + msg[3] + ',' + msg[4]))
+        socket_monitor.sendall(str(msg[2] + ',' + msg[3]))
         resposta_monitor = socket_monitor.recv(4096)
         conn.sendall(str('recurso,' + resposta_monitor))
         desconecta_monitor(socket_monitor)
@@ -132,7 +136,6 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
         print '            IP do monitor: ' + str(msg[1])
         print '            Recurso: ' + str(msg[2])
         print '            Quantidade: ' + str(msg[3])
-        print '            Formato: ' + str(msg[4])
         lista_recurso_maquina(conn, msg)
     else:
         print '      Desconhecida - Erro'

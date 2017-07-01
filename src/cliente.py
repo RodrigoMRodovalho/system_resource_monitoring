@@ -6,7 +6,7 @@ from datetime import datetime
 import wx
 
 
-#Classe que representa a janela de aviso
+# Classe que representa a janela de aviso
 class JanelaAviso(wx.Dialog):
     def __init__(self, parent, texto):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
@@ -19,6 +19,7 @@ class JanelaAviso(wx.Dialog):
         sizer.Add(self.botoes, 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizerAndFit(sizer)
 
+
 # Classe que representa a janela para inserir os dados do coletor
 class JanelaDadoColetor(wx.Dialog):
     def __init__(self, parent):
@@ -27,10 +28,10 @@ class JanelaDadoColetor(wx.Dialog):
 
         # Configuracao de elementos de tela
         self.ip_texto = wx.StaticText(self, -1, "Digite o ip")
-        self.ip_entrada = wx.TextCtrl(self, value="")
+        self.ip_entrada = wx.TextCtrl(self, value="127.0.0.1")
         self.ip_entrada.SetInitialSize((200, 20))
         self.porta_texto = wx.StaticText(self, -1, "Digite a porta")
-        self.porta_entrada = wx.TextCtrl(self, value="")
+        self.porta_entrada = wx.TextCtrl(self, value="50053")
         self.porta_entrada.SetInitialSize((200, 20))
         botoes = self.CreateButtonSizer(wx.OK | wx.CANCEL)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -66,15 +67,59 @@ class JanelaCadastrarMaquina(wx.Dialog):
     def pegar_ip_maquina(self):
         return self.ip_maquina.GetValue()
 
+
 class JanelaColetaRecurso(wx.Dialog):
-    pass
+    def __init__(self, parent):
+        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        super(JanelaColetaRecurso, self).__init__(parent, -1, 'Coleta de Recurso Monitorado',
+                                                             style=style)
+        self.ip_maquina_texto = wx.StaticText(self, -1, "Digite o IP da maquina monitorada")
+        self.ip_maquina = wx.TextCtrl(self, value="127.0.0.1")
+        self.ip_maquina.SetInitialSize((200, 20))
+
+        recursos = [
+            'Consumo de CPU',
+            'Consumo de memoria',
+            'Uso da swap',
+            'Taxa de saida e de entrada de pacotes nas interfaces de Rede',
+            'Numero de processos ativos',
+            '5 Processos com maior consumo de Memoria',
+            '5 Processos com maior consumo de CPU',
+            'Uso de Disco'
+        ]
+
+        self.recurso_texto = wx.StaticText(self, -1, "Escolha o recurso")
+        self.escolhe_recurso = wx.Choice(self, choices=recursos)
+        #self.escolhe_recurso.Bind(wx.EVT_CHOICE, self.recurso_escolhido)
+
+        self.quantidade_texto = wx.StaticText(self, -1, "Digite a quantidade de medicoes")
+        self.quantidade = wx.TextCtrl(self, value="")
+        self.quantidade.SetInitialSize((200, 20))
+
+        botoes = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.ip_maquina_texto, 0, wx.ALL, 5)
+        sizer.Add(self.ip_maquina, wx.EXPAND, wx.ALL, 5)
+        sizer.Add(self.recurso_texto, 0, wx.ALL, 5)
+        sizer.Add(self.escolhe_recurso, wx.EXPAND, wx.ALL, 5)
+        sizer.Add(self.quantidade_texto, 0, wx.ALL, 5)
+        sizer.Add(self.quantidade, wx.EXPAND, wx.ALL, 5)
+        sizer.Add(botoes, 0, wx.EXPAND | wx.ALL, 5)
+        self.SetSizerAndFit(sizer)
+
+    def pega_recurso_escolhido(self):
+        return str(self.ip_maquina.GetValue()) + ',' + \
+               str(self.escolhe_recurso.GetSelection()) + ',' + \
+               str(self.quantidade.GetValue())
+
 
 class JanelaListaMaquinasCadastradas(wx.Dialog):
     def __init__(self, parent, listagem_maquinas):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        super(JanelaListaMaquinasCadastradas, self).__init__(parent, -1, 'Listagem de maquinas cadastradas', style=style)
+        super(JanelaListaMaquinasCadastradas, self).__init__(parent, -1, 'Listagem de maquinas cadastradas',
+                                                             style=style)
 
-        #todo implement body
+        # todo implement body
 
         botoes = self.CreateButtonSizer(wx.OK)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -87,13 +132,13 @@ class JanelaRecursosColetados(wx.Dialog):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
         super(JanelaRecursosColetados, self).__init__(parent, -1, 'Recurso coletado de IP', style=style)
 
-
-        #todo implement body
+        # todo implement body
 
         botoes = self.CreateButtonSizer(wx.OK)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(botoes, 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizerAndFit(sizer)
+
 
 # Classe que representa a tela principal
 class TelaSistema(wx.Frame):
@@ -103,7 +148,8 @@ class TelaSistema(wx.Frame):
         # Configuracao de elementos de tela
 
         # Configuracoes de textos, botoes e os eventos de clique dos botoes
-        self.bem_vindo = wx.StaticText(self, label="Bem vindo ao Sistema de Monitoramento de maquinas - UFF", pos=(20, 10))
+        self.bem_vindo = wx.StaticText(self, label="Bem vindo ao Sistema de Monitoramento de maquinas - UFF",
+                                       pos=(20, 10))
         self.botao_cadastrar_maquina = wx.Button(self, label="Cadastrar Maquina", pos=(20, 60))
         self.Bind(wx.EVT_BUTTON, botao_cadastrar_maquina, self.botao_cadastrar_maquina)
 
@@ -139,6 +185,7 @@ def botao_listar_maquinas(evento):
     # criacao da janela de cadastro de usuario
     envia_mensagem_coletor('lista')
 
+
 # funcao de evento de clique do botao para cadastrar usuario
 def botao_coletar_recurso(evento):
     # criacao da janela de cadastro de usuario
@@ -147,16 +194,17 @@ def botao_coletar_recurso(evento):
     dados = None
     if janela.ShowModal() == wx.ID_OK:
         # apos clicar em OK da janela, pega as informacoes inseridas na janela
-        dados = janela.pegar_ip_maquina()
+        dados = janela.pega_recurso_escolhido()
     janela.Destroy()
 
     if dados is not None:
-        dados = dados.split(',')
-        envia_mensagem_coletor(str('recurso,' + dados[0] + ',' + dados[1] + ',' + dados[2]))
+        envia_mensagem_coletor(str('recurso,' + dados))
+
 
 def botao_sair(evento):
     global tela
     tela.Destroy()
+
 
 # Soluca da internet para ver todas as informacoes sobre o erro dentro do except:
 def PrintException():
@@ -247,10 +295,10 @@ tela = None
 
 try:
 
-    #cria interface grafica
+    # cria interface grafica
     app = wx.App(False)
 
-    #cria janela com dados do coletor
+    # cria janela com dados do coletor
     janela = JanelaDadoColetor(None)
     janela.Center()
     if janela.ShowModal() == wx.ID_OK:
@@ -258,18 +306,18 @@ try:
         host_ip = dados_coletor[0]
         porta = int(dados_coletor[1])
         estabelece_conexao_coletor(host_ip, porta)
-        #conecta coletor
+        # conecta coletor
         s_coletor_contectado.acquire()
         if coletor_conectado:
-            #executa thread para escutar as mensagens
+            # executa thread para escutar as mensagens
             t = Thread(target=escuta_coletor)
             t.setDaemon(True)
             t.start()
-            #criacao da tela principal
+            # criacao da tela principal
             tela = TelaSistema()
             tela.Show()
         else:
-            #cria janela de aviso para mostrar que nao foi possivel conectar
+            # cria janela de aviso para mostrar que nao foi possivel conectar
             janela_aviso = JanelaAviso(None, 'Nao foi possivel conectar ao coletor')
             janela_aviso.Center()
             janela_aviso.ShowModal()
@@ -281,4 +329,3 @@ try:
 # Por final, desconecta serviddor
 finally:
     desconecta_coletor()
-
