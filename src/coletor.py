@@ -80,11 +80,11 @@ def lista_recurso_maquina(conn, msg):
     socket_monitor = conecta_monitor(msg[1])
     if socket_monitor is None:
         print 'erro ao conectar'
-        conn.sendall('erro ao conectar monitor')
+        conn.sendall('recurso,NOk')
     else:
         socket_monitor.sendall(str(msg[2] + ',' + msg[3] + ',' + msg[4]))
         resposta_monitor = socket_monitor.recv(4096)
-        conn.sendall(resposta_monitor)
+        conn.sendall(str('recurso,' + resposta_monitor))
         desconecta_monitor(socket_monitor)
 
 
@@ -125,7 +125,7 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
 
     elif 'lista' in msg:
         print '      Listagem de maquinas cadastradas'
-        conn.sendall(lista_maquinas_cadastradas())
+        conn.sendall(str('lista,' + lista_maquinas_cadastradas()))
     elif 'recurso' in msg:
         msg = msg.split(',')
         print '      -Pedido de monitoramento:'
@@ -136,8 +136,8 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
         lista_recurso_maquina(conn, msg)
     else:
         print '      Desconhecida - Erro'
-        conn.sendall("Erro")
-    print '######################'
+        conn.sendall("NOk")
+    print '##########################'
 
 
 # Thread que aceita as conexoes dos clientes
