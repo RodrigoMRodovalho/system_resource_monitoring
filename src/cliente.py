@@ -153,7 +153,7 @@ class JanelaRecursosColetados(wx.Dialog):
 # Classe que representa a tela principal
 class TelaSistema(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, parent=None, title="Monitoramento de Sistema UFF", size=(1000, 280))
+        wx.Frame.__init__(self, parent=None, title="Monitoramento de Sistema UFF", size=(400, 280))
 
         # Configuracao de elementos de tela
 
