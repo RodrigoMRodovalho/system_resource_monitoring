@@ -4,6 +4,7 @@ import linecache
 from threading import Thread, BoundedSemaphore
 from datetime import datetime
 import time
+import os
 
 COLETOR_PORTA = 50053
 MONITOR_PORTA = 50999
@@ -30,7 +31,12 @@ def cadastra_maquina(ip):
         s_arquivo_cadastro_maquinas.acquire()
 
         # abertura do arquivo
-        arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, 'r+')
+
+        if os.path.exists(ARQUIVO_CADASTRO_MAQUINAS):
+            acesso_arquivo = 'r+'
+        else:
+            acesso_arquivo = 'w+'
+        arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, acesso_arquivo)
 
         maquina_nao_cadastrada = True
         # verifica se a maquina ja esta cadastrada
@@ -58,6 +64,9 @@ def cadastra_maquina(ip):
 def lista_maquinas_cadastradas():
     # le maquinas do arquivo
     global s_arquivo_cadastro_maquinas
+
+    if not os.path.exists(ARQUIVO_CADASTRO_MAQUINAS):
+        return ''
 
     # verificar se o usuario e senha estao no arquivo e se sao compativeis
     s_arquivo_cadastro_maquinas.acquire()
