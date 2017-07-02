@@ -29,10 +29,10 @@ class JanelaDadoColetor(wx.Dialog):
 
         # Configuracao de elementos de tela
         self.ip_texto = wx.StaticText(self, -1, "Digite o ip")
-        self.ip_entrada = wx.TextCtrl(self, value="127.0.0.1")
+        self.ip_entrada = wx.TextCtrl(self, value="")
         self.ip_entrada.SetInitialSize((200, 20))
         self.porta_texto = wx.StaticText(self, -1, "Digite a porta")
-        self.porta_entrada = wx.TextCtrl(self, value="50053")
+        self.porta_entrada = wx.TextCtrl(self, value="")
         self.porta_entrada.SetInitialSize((200, 20))
         botoes = self.CreateButtonSizer(wx.OK | wx.CANCEL)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -48,7 +48,7 @@ class JanelaDadoColetor(wx.Dialog):
         return self.ip_entrada.GetValue() + "," + self.porta_entrada.GetValue()
 
 
-# Classe que representa a janela para inserir os dados para entrar em um leilao
+# Classe que representa a janela para inserir os dados para cadastrar uma maquina
 class JanelaCadastrarMaquina(wx.Dialog):
     def __init__(self, parent):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
@@ -69,13 +69,15 @@ class JanelaCadastrarMaquina(wx.Dialog):
         return self.ip_maquina.GetValue()
 
 
+# Classe que representa a janela para inserir os dados para coletar um determinad recurso
 class JanelaColetaRecurso(wx.Dialog):
     def __init__(self, parent):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
         super(JanelaColetaRecurso, self).__init__(parent, -1, 'Coleta de Recurso Monitorado',
                                                   style=style)
+        # Configuracao de elementos de tela
         self.ip_maquina_texto = wx.StaticText(self, -1, "Digite o IP da maquina monitorada")
-        self.ip_maquina = wx.TextCtrl(self, value="127.0.0.1")
+        self.ip_maquina = wx.TextCtrl(self, value="")
         self.ip_maquina.SetInitialSize((200, 20))
 
         recursos = [
@@ -107,20 +109,22 @@ class JanelaColetaRecurso(wx.Dialog):
         sizer.Add(botoes, 0, wx.EXPAND | wx.ALL, 5)
         self.SetSizerAndFit(sizer)
 
+    # funcao para pegar os dados inseridos na janela
     def pega_recurso_escolhido(self):
         return str(self.ip_maquina.GetValue()) + ',' + \
                str(self.escolhe_recurso.GetSelection()) + ',' + \
                str(self.quantidade.GetValue())
 
 
+# Classe que representa a janela para mostra a lista de maquinas cadastradas
 class JanelaListaMaquinasCadastradas(wx.Dialog):
     def __init__(self, parent, listagem_maquinas):
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
         super(JanelaListaMaquinasCadastradas, self).__init__(parent, -1, 'Listagem de maquinas cadastradas',
                                                              style=style)
-
+        # Configuracao de elementos de tela
         listagem_maquinas = listagem_maquinas.replace('lista,', '').split(',')
-        tabela = gridlib.Grid(self,size=(320,300))
+        tabela = gridlib.Grid(self, size=(320, 300))
         tabela.CreateGrid(len(listagem_maquinas), 1)
         tabela.SetColLabelValue(0, "IP")
         tabela.SetColSize(0, 130)
@@ -138,17 +142,18 @@ class JanelaListaMaquinasCadastradas(wx.Dialog):
         self.SetSizerAndFit(sizer)
 
 
+# Classe que representa a janela para mostra as informacoes de um determinado recurso coletado
 class JanelaRecursosColetados(wx.Dialog):
     def __init__(self, parent, recurso_coletado):
-
         recurso_coletado = recurso_coletado.split(',')
 
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        super(JanelaRecursosColetados, self).__init__(parent, -1, str('Recurso coletado - ' + recurso_coletado[1]), style=style)
-
-        self.recurso_texto = wx.TextCtrl(self, -1,str(recurso_coletado[2]),
-                               style=wx.TE_MULTILINE | wx.BORDER_SUNKEN | wx.TE_READONLY |
-                                     wx.TE_RICH2, size=(400, 400))
+        super(JanelaRecursosColetados, self).__init__(parent, -1, str('Recurso coletado - ' + recurso_coletado[1]),
+                                                      style=style)
+        # Configuracao de elementos de tela
+        self.recurso_texto = wx.TextCtrl(self, -1, str(recurso_coletado[2]),
+                                         style=wx.TE_MULTILINE | wx.BORDER_SUNKEN | wx.TE_READONLY |
+                                               wx.TE_RICH2, size=(400, 400))
 
         botoes = self.CreateButtonSizer(wx.OK)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -166,17 +171,17 @@ class TelaSistema(wx.Frame):
         self.panel = wx.Panel(self)
 
         # Configuracoes de textos, botoes e os eventos de clique dos botoes
-        self.bem_vindo = wx.StaticText(self.panel, label="Bem vindo ao Sistema de Monitoramento de Maquinas - UFF",)
-        self.botao_cadastrar_maquina = wx.Button(self.panel, label="Cadastrar Maquina",size=(250,30))
+        self.bem_vindo = wx.StaticText(self.panel, label="Bem vindo ao Sistema de Monitoramento de Maquinas - UFF", )
+        self.botao_cadastrar_maquina = wx.Button(self.panel, label="Cadastrar Maquina", size=(250, 30))
         self.Bind(wx.EVT_BUTTON, botao_cadastrar_maquina, self.botao_cadastrar_maquina)
 
-        self.botao_listar_maquinas = wx.Button(self.panel, label="Listar Maquinas Cadastradas",size=(250,30))
+        self.botao_listar_maquinas = wx.Button(self.panel, label="Listar Maquinas Cadastradas", size=(250, 30))
         self.Bind(wx.EVT_BUTTON, botao_listar_maquinas, self.botao_listar_maquinas)
 
-        self.botao_coletar_recurso = wx.Button(self.panel, label="Coletar Recurso",size=(250,30))
+        self.botao_coletar_recurso = wx.Button(self.panel, label="Coletar Recurso", size=(250, 30))
         self.Bind(wx.EVT_BUTTON, botao_coletar_recurso, self.botao_coletar_recurso)
 
-        self.botao_sair = wx.Button(self.panel, label="Sair",size=(250,30))
+        self.botao_sair = wx.Button(self.panel, label="Sair", size=(250, 30))
         self.Bind(wx.EVT_BUTTON, botao_sair, self.botao_sair)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -194,9 +199,11 @@ class TelaSistema(wx.Frame):
         j_aviso.ShowModal()
         j_aviso.Destroy()
 
+    # funcao que mostra janela de aviso com mensagem de erro
     def mostra_erro(self):
         self.mostra_janela_aviso('Ocorreu um erro')
 
+    # funcao que mostra janela de aviso com mensagem de resposta ao cadastro
     def mostra_cadastro(self, msg):
 
         if 'NOk' in msg:
@@ -204,6 +211,7 @@ class TelaSistema(wx.Frame):
         else:
             self.mostra_janela_aviso('Maquina cadastrada com sucesso')
 
+    # funcao que mostra janela que lista as maquinas cadastradas ou janela de aviso caso nao tenha nenhuma
     def mostra_lista_maquinas(self, msg):
 
         if msg == 'lista,':
@@ -214,6 +222,7 @@ class TelaSistema(wx.Frame):
             j_lista_maquinas.ShowModal()
             j_lista_maquinas.Destroy()
 
+    # funcao que mostra janela que apresenta as informacoes de um recurso coletado ou janela de aviso caso tenha erro
     def mostra_recurso(self, msg):
 
         if 'NOk' in msg:
@@ -225,11 +234,11 @@ class TelaSistema(wx.Frame):
             j_lista_maquinas.Destroy()
 
 
-# funcao de evento de clique do botao para cadastrar usuario
+# funcao de evento de clique do botao para cadastrar maquina
 def botao_cadastrar_maquina(evento):
     global s_operacao_atual, operacao_atual
 
-    # criacao da janela de cadastro de usuario
+    # criacao da janela de cadastro de maquina
     janela = JanelaCadastrarMaquina(None)
     janela.Center()
     dados = None
@@ -239,18 +248,19 @@ def botao_cadastrar_maquina(evento):
     janela.Destroy()
 
     if dados is not None:
+        # envia mensagem de cadastro para o coletor
         envia_mensagem_coletor(str('cadastra,' + dados))
 
 
-# funcao de evento de clique do botao para cadastrar usuario
+# funcao de evento de clique do botao para listar as maquinas cadastradas
 def botao_listar_maquinas(evento):
-    # criacao da janela de cadastro de usuario
+    # envia mensagem para listar maquinas cadastradas para o coletor
     envia_mensagem_coletor('lista')
 
 
-# funcao de evento de clique do botao para cadastrar usuario
+# funcao de evento de clique do botao para coletar um recurso
 def botao_coletar_recurso(evento):
-    # criacao da janela de cadastro de usuario
+    # criacao da janela de coleta de recurso
     janela = JanelaColetaRecurso(None)
     janela.Center()
     dados = None
@@ -260,11 +270,13 @@ def botao_coletar_recurso(evento):
     janela.Destroy()
 
     if dados is not None:
+        # envia mensagem de coleta de recurso para o coletor
         envia_mensagem_coletor(str('recurso,' + dados))
 
-
+# funcao de evento de clique do botao para sair
 def botao_sair(evento):
     global tela
+    # fecha a tela principal
     tela.Destroy()
 
 
@@ -291,10 +303,10 @@ def log_mensagem_recebida(mensagem):
 
 
 # Funcao que guarda nas variaveis o IP e Porta do coletor
-def configura_coletor(host, port):
-    global host_ip, porta
-    host_ip = host
-    porta = port
+def configura_coletor(ip, port):
+    global coletor_ip, coletor_porta
+    coletor_ip = ip
+    coletor_porta = port
 
 
 # Funcao que conecta socket do coletor
@@ -304,7 +316,7 @@ def conecta_coletor():
         # Cria socket para conexao
         coletor_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Configura endereco - IP e Porta
-        endereco_coletor = (host_ip, porta)
+        endereco_coletor = (coletor_ip, coletor_porta)
         print >> sys.stderr, 'Conectando em %s port %s' % endereco_coletor
         coletor_sock.connect(endereco_coletor)
         print >> sys.stderr, 'Conectado'
@@ -319,11 +331,11 @@ def desconecta_coletor():
 
 
 # Funcao que realiza comunicacao com coletor
-def estabelece_conexao_coletor(host_ip, porta):
+def estabelece_conexao_coletor(coletor_ip, coletor_porta):
     global s_coletor_contectado, coletor_conectado, mensagem_erro
 
     # Configura IP e Porta do coletor
-    configura_coletor(host_ip, porta)
+    configura_coletor(coletor_ip, coletor_porta)
     # Verifica se conecta com o coletor
     if conecta_coletor():
         # mensagem_erro = None
@@ -345,6 +357,7 @@ def escuta_coletor():
         msg = coletor_sock.recv(4096)
         log_mensagem_recebida(msg)
 
+        # filtra qual tipo de mensagem de retorna e chama a funcao da tela principal
         if msg == 'NOk':
             wx.CallAfter(tela.mostra_erro, '')
         elif 'cadastra' in msg:
@@ -356,14 +369,15 @@ def escuta_coletor():
         else:
             print 'mensagem desconhecida'
 
-
-host_ip = '127.0.0.1'
-porta = 50053
+# variaveis para guardar informacoes de ip e porta do coletor
+coletor_ip = ''
+coletor_porta = None
 # Declaracao do socket de conexao com coletor
 coletor_sock = None
 coletor_conectado = False
 s_coletor_contectado = BoundedSemaphore()
 
+# tela principal
 tela = None
 
 try:
@@ -375,14 +389,15 @@ try:
     janela = JanelaDadoColetor(None)
     janela.Center()
     if janela.ShowModal() == wx.ID_OK:
+        # pega informacoes de ip e porta do coletor
         dados_coletor = janela.pegar_dados_coletor().split(',')
-        host_ip = dados_coletor[0]
-        porta = int(dados_coletor[1])
-        estabelece_conexao_coletor(host_ip, porta)
-        # conecta coletor
+        coletor_ip = dados_coletor[0]
+        coletor_porta = int(dados_coletor[1])
+        # coneta com coletor
+        estabelece_conexao_coletor(coletor_ip, coletor_porta)
         s_coletor_contectado.acquire()
         if coletor_conectado:
-            # executa thread para escutar as mensagens
+            # executa thread para escutar as mensagens do coletor
             t = Thread(target=escuta_coletor)
             t.setDaemon(True)
             t.start()
@@ -400,6 +415,6 @@ try:
     janela.Destroy()
     app.MainLoop()
 
-# Por final, desconecta serviddor
+# Por final, desconecta do coletor
 finally:
     desconecta_coletor()
