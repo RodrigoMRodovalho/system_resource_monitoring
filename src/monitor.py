@@ -34,7 +34,7 @@ class Recursos:
         self.cinco_processos_cpu = None
         self.disco = None
 
-    # imprime as informacoes dos recursos
+    # funcao que retorna as informacoes dos recursos
     def __str__(self):
         rec = self.formata_tempo()
         rec = rec + '\n' + self.cpu
@@ -82,7 +82,7 @@ class Recursos:
     # Salva dado de disco
     def registra_disco(self, disco):
         self.disco = disco
-
+    # Funcao que retorna o numero de processos ativos
     def pega_num_processo_ativo(self):
         return 'Numero de Processos ativos: ' + str(self.num_processos_ativos)
 
@@ -92,7 +92,7 @@ class Memoria:
         self.mb = mb
         self.porcento = porcento
 
-    # imprimi informacoes de memoria virtual
+    # funcao que retorna as informacoes de memoria virtual
     def __str__(self):
         rec = 'Memoria Virtual : '
         rec = rec + '\n' + '                : ' + str(self.mb) + ' MB'
@@ -106,7 +106,7 @@ class MemoriaSwap:
         self.mb = mb
         self.porcento = porcento
 
-    # imprimi informacoes de memoria swap
+    # funcao que retorna informacoes de memoria swap
     def __str__(self):
         rec = 'Memoria Swap : '
         rec = rec + '\n' + '             : ' + str(self.mb) + ' MB'
@@ -119,7 +119,7 @@ class Cpu:
     def __init__(self, porcento):
         self.porcento = porcento
 
-    # imprimi informacoes de memoria
+    # funcao que retorna as informacoes de memoria
     def __str__(self):
         rec = 'CPU : '
         rec = rec + '\n' + '    : ' + str(self.porcento) + ' %'
@@ -135,7 +135,7 @@ class Rede:
     def insere_interface(self, interface, pacotes_enviados, pacotes_recebidos):
         self.rede[interface] = [pacotes_enviados, pacotes_recebidos]
 
-    # imprimi informacoes de rede
+    # funcao que retorna as informacoes de rede
     def __str__(self):
         rec = 'Rede : '
         for interface in self.rede:
@@ -155,7 +155,7 @@ class Processo:
         self.mem = mem
         self.cpu = cpu
 
-    # imprimi informacoes do processo
+    # funcao que retorna as informacoes do processo
     def __str__(self):
         rec = '      PID: ' + str(self.pid)
         rec = rec + '\n' + '      Nome: ' + str(self.nome)
@@ -177,7 +177,7 @@ class ProcessosMaxMemoria:
         self.proc[self.posicao] = processo
         self.posicao = self.posicao + 1
 
-    # imprime os processos que mais consomem memoria
+    # funcao que retornna as informacoes dos processos que mais consomem memoria
     def __str__(self):
         rec = 'Processos - Maior Consumo Memoria'
         for p in self.proc:
@@ -196,7 +196,7 @@ class ProcessosMaxCpu:
         self.proc[self.posicao] = processo
         self.posicao = self.posicao + 1
 
-    # imprime os processos que mais consomem cpu
+    # funcao que retornna as informacoes dos processos que mais consomem cpu
     def __str__(self):
         rec = 'Processos - Maior Consumo CPU'
         for p in self.proc:
@@ -210,7 +210,7 @@ class Disco:
         self.gb = gb
         self.porcento = porcento
 
-    # imprime os dados de disco
+    # funcao que retorna os dados de disco
     def __str__(self):
         rec = 'Disco : '
         rec = rec + '\n' + '      : ' + str(self.gb) + ' Gb'
@@ -218,7 +218,7 @@ class Disco:
         return rec
 
 
-# funcao que imprime um determinado recurso a partir de recursos ja coletados
+# funcao que retorna um determinado recurso a partir de recursos ja coletados
 def coleta_recurso(msg):
     global recursos
     msg = msg.split(',')
@@ -226,6 +226,7 @@ def coleta_recurso(msg):
     # copia da estrutura pois a original deve continuar coletando recursos
     rec = copy.copy(recursos)
 
+    #verifica se o cliente deseja uma quantidade especifica
     if msg[1] == '':
         quantidade = TAMANHO_JANELA_DESLIZANTE
     else:
@@ -235,7 +236,7 @@ def coleta_recurso(msg):
         quantidade = len(rec)
 
     resposta_coleta = ''
-    # dependendo do tipo pedido e impresso a hora que foi coletado o recurso
+    # dependendo do tipo pedido retorna a hora que foi coletado o recurso
     # e as informacoes do recurso
     if tipo_recurso is COLETA_CPU:
         for r in xrange(quantidade):
@@ -360,23 +361,25 @@ def salva_recursos():
         # espera para coletar
         time.sleep(INTERVALO_TEMPO)
 
-
+# Thread que aceita as conexoes dos coletores
 def aceita(conn, addr):
-    # recebe a mensagem vinda do cliente e repassa para funcao para processar as informacoes
+    # recebe a mensagem vinda do coletor e repassa para funcao para retornar as informacoes
+    # do recurso coletado
     while True:
         msg = conn.recv(4096)
 
         if len(msg) == 0:
             break
-
+        # envia mensagem de resposta pro coletor com informacoes do recurso coletado
         conn.sendall(coleta_recurso(msg))
 
     print 'conexao encerrada ', addr
+    # encerra conexao
     conn.close()
 
 
-# tamanho da janela deslizante, deve ser 1000, mas pra teste 5
-TAMANHO_JANELA_DESLIZANTE = 50
+# tamanho da janela deslizante
+TAMANHO_JANELA_DESLIZANTE = 1000
 # tempo de espera 100 ms
 INTERVALO_TEMPO = 0.01
 
@@ -389,8 +392,8 @@ print 'Rodando Monitor'
 recursos_thread = Thread(target=salva_recursos)
 recursos_thread.start()
 
-# Configuracoes de socket do servidor
-HOST = '127.0.0.1'  # Symbolic name meaning all available interfaces
+# Configuracoes de socket do monitor
+HOST = ''  # Symbolic name meaning all available interfaces
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # IPv4,tipo de socket
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((HOST, PORT))  # liga o socket com IP e porta
@@ -399,15 +402,7 @@ while 1:
     s.listen(1)  # espera chegar pacotes na porta especificada
     conn, addr = s.accept()  # Aceita uma conexao
     print 'Aceitou uma conexao de ', addr
-    # Criacao de thread para nao travar o servidor e poder receber conexoes dos clientes a qualquer momento
+    # Criacao de thread para nao travar o monitor
+    # e poder receber conexoes dos coletores a qualquer momento
     t = Thread(target=aceita, args=(conn, addr,))
     t.start()
-
-
-# Para testar - funcao que sempre pede um valor correspondente a um recurso para imprimir na tela
-# while True:
-# le do teclado identificador do recurso
-#    opcao_recurso = raw_input("Digite o recurso\n")
-#    quant_recurso = raw_input("Quantidade de medicoes do recurso\n")
-# chama funcao para imprimir informacoes coletadas do recurso pedido
-#    coleta_recurso(opcao_recurso,quant_recurso)
