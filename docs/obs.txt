@@ -2,6 +2,10 @@
     - Para pegar as informações de quanto cada processo está consumindo de CPU,
      não é possível pegar de imediato, precisa de 1 segundo para cada processo, tornando assim a coleta inviável
 
+* Limitação da biblioteca de interface gráfica
+    - Na janela para mostrar os recursos coletados, não tem como mostrar muitas medições de coletados, pois não cabe
+     a barra de colagem não consegue mostrar tudo. (talvez no máximo mostra umas 20 medições)
+
 * O QUE O SISTEMA NÃO FAZ
     - O usuário NÃO pode escolher se quer a resposta em forma de média ou medidas
         * Sempre são retornadas as medidas
