@@ -169,11 +169,13 @@ class Processo:
 # Classe que represente a lista dos processos que mais consomem memoria
 class ProcessosMaxMemoria:
     def __init__(self):
-        self.proc = {}
+        self.proc = [None] * 5
+        self.posicao = 0
 
     # registra processo
     def adiciona_processo(self, processo):
-        self.proc[processo] = processo
+        self.proc[self.posicao] = processo
+        self.posicao = self.posicao + 1
 
     # imprime os processos que mais consomem memoria
     def __str__(self):
@@ -186,11 +188,13 @@ class ProcessosMaxMemoria:
 # Classe que represente a lista dos processos que mais consomem cpu
 class ProcessosMaxCpu:
     def __init__(self):
-        self.proc = {}
+        self.proc = [None] * 5
+        self.posicao = 0
 
     # registra processo
     def adiciona_processo(self, processo):
-        self.proc[processo] = processo
+        self.proc[self.posicao] = processo
+        self.posicao = self.posicao + 1
 
     # imprime os processos que mais consomem cpu
     def __str__(self):
