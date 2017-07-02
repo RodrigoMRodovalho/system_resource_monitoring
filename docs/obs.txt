@@ -1,0 +1,9 @@
+* Limitação da biblioteca que pega os recursos da máquina
+    - Para pegar as informações de quanto cada processo está consumindo de CPU,
+     não é possível pegar de imediato, precisa de 1 segundo para cada processo, tornando assim a coleta inviável
+
+* O QUE O SISTEMA NÃO FAZ
+    - O usuário NÃO pode escolher se quer a resposta em forma de média ou medidas
+        * Sempre são retornadas as medidas
+    - O usuário NÃO pode pedir um recurso por determinado tempo
+        * Só pode dizer qual é o recurso e qual a quantidade
