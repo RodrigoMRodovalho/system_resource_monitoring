@@ -6,8 +6,11 @@ from datetime import datetime
 import time
 import os
 
+# declara porta do coletor
 COLETOR_PORTA = 50053
+# declara porta do monitor
 MONITOR_PORTA = 50999
+# declara nome do arquivo para cadastrar as maquinas
 ARQUIVO_CADASTRO_MAQUINAS = "maquinas.txt"
 
 
@@ -29,13 +32,12 @@ def cadastra_maquina(ip):
 
     try:
         s_arquivo_cadastro_maquinas.acquire()
-
-        # abertura do arquivo
-
+        # escolhe se usa modo de acesso para adicionar linha ou para escrever o arquivo novo
         if os.path.exists(ARQUIVO_CADASTRO_MAQUINAS):
             acesso_arquivo = 'r+'
         else:
             acesso_arquivo = 'w+'
+        # abre o arquivo
         arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, acesso_arquivo)
 
         maquina_nao_cadastrada = True
@@ -65,11 +67,12 @@ def lista_maquinas_cadastradas():
     # le maquinas do arquivo
     global s_arquivo_cadastro_maquinas
 
+    # verifica se o arquivo existe, caso nao exista retorna vazio
     if not os.path.exists(ARQUIVO_CADASTRO_MAQUINAS):
         return ''
 
-    # verificar se o usuario e senha estao no arquivo e se sao compativeis
     s_arquivo_cadastro_maquinas.acquire()
+    # abertura do arquivo em modo leitura
     arquivo_maquinas_cadastradas = open(ARQUIVO_CADASTRO_MAQUINAS, 'r')
 
     maquinas = ''
@@ -84,20 +87,28 @@ def lista_maquinas_cadastradas():
 
     arquivo_maquinas_cadastradas.close()
     s_arquivo_cadastro_maquinas.release()
+    # retorna os ips cadastrados
     return maquinas
 
 
 # funcao que retorna um recurso monitorado de uma maquina
 def lista_recurso_maquina(conn, msg):
     # envia pedido (get) de recurso para o monitor
+    # conecta socket do monitor com o ip passado
     socket_monitor = conecta_monitor(msg[1])
     if socket_monitor is None:
+        # erro ao conectar
         print 'erro ao conectar'
+        # retorna para o cliente NOk
         conn.sendall('recurso,NOk')
     else:
+        # envia para o monitor as informacoes de qual recurso e a quantidade
         socket_monitor.sendall(str(msg[2] + ',' + msg[3]))
+        # espera resposta do monitor
         resposta_monitor = socket_monitor.recv(4096)
+        # envia resposta do monitor para o cliente
         conn.sendall(str('recurso,' + msg[1] + ',' + resposta_monitor))
+        # desconecta do monitor
         desconecta_monitor(socket_monitor)
 
 
@@ -119,18 +130,22 @@ def desconecta_monitor(monitor_socket):
     monitor_socket.close()
 
 
-# funcao que recebe requisicao
+# funcao que processa a requisicao
 def processa_requisicao(msg, conn, addr, numero_requisicao):
+    # obtem a marca de tempo
     marca_tempo = datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y - %H:%M:%S")
 
+    # imprime informacoes da requisicao
     print '###### Requisicao ' + numero_requisicao + ' ######'
     print '-Marca de Tempo: ' + str(marca_tempo) + 'h'
     print '-Usuario\n      -IP: ' + str(addr[0]) + '\n      -PORTA: ' + str(addr[1])
     print '-Operacao:'
 
+    # verifica qual e o tipo da requisicao
     if 'cadastra' in msg:
         msg = msg.split(',')
         print '      Cadastro de maquina: ' + str(msg[1])
+        # chama funcao para cadastrar a maquina, dependendo do sucesso, envia a resposta pro cliente
         if cadastra_maquina(msg[1]):
             conn.sendall('cadastra,Ok')
         else:
@@ -138,6 +153,7 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
 
     elif 'lista' in msg:
         print '      Listagem de maquinas cadastradas'
+        # envia resposta para o cliente das maquinas cadastradas
         conn.sendall(str('lista,' + lista_maquinas_cadastradas()))
     elif 'recurso' in msg:
         msg = msg.split(',')
@@ -145,8 +161,10 @@ def processa_requisicao(msg, conn, addr, numero_requisicao):
         print '            IP do monitor: ' + str(msg[1])
         print '            Recurso: ' + str(msg[2])
         print '            Quantidade: ' + str(msg[3])
+        # chama funcao para retorna informacoes do recurso pedido
         lista_recurso_maquina(conn, msg)
     else:
+        # caso venha uma mensagem errada, retorna erro
         print '      Desconhecida - Erro'
         conn.sendall("NOk")
     print '##########################'
@@ -157,6 +175,7 @@ def aceita(conn, addr):
     global numero_usuarios_conectados, s_numero_usuarios_conectados
     global numero_requsicoes_atendidas, s_numero_requisicoes_atendidas
 
+    # atualiza o numero de usuarios conectados - incrementando 1
     s_numero_usuarios_conectados.acquire()
     numero_usuarios_conectados = numero_usuarios_conectados + 1
     s_numero_usuarios_conectados.release()
@@ -174,12 +193,15 @@ def aceita(conn, addr):
         if len(msg) == 0:
             break
 
+        # chama funcao para processar as informacoes da requisicao
         processa_requisicao(msg, conn, addr, numero_requisicao)
 
     print 'conexao encerrada ', addr
+    # atualiza o numero de usuarios conectados - decrementando 1
     s_numero_usuarios_conectados.acquire()
     numero_usuarios_conectados = numero_usuarios_conectados - 1
     s_numero_usuarios_conectados.release()
+    # encerra conexao
     conn.close()
 
 
@@ -187,7 +209,7 @@ def aceita(conn, addr):
 numero_usuarios_conectados = 0
 s_numero_usuarios_conectados = BoundedSemaphore()
 
-# contador do nunero de requisicoes atendidas e um semaforo para controle
+# contador do numero de requisicoes atendidas e um semaforo para controle
 numero_requsicoes_atendidas = 0
 s_numero_requisicoes_atendidas = BoundedSemaphore()
 
@@ -199,8 +221,8 @@ usuarios_conectados = {}
 # semaforo de controle para estrutura de usuarios conectados
 s_usuarios_conectados = BoundedSemaphore()
 
-# Configuracoes de socket do servidor
-HOST = '127.0.0.1'  # Symbolic name meaning all available interfaces
+# Configuracoes de socket do coletor
+HOST = ''  # Symbolic name meaning all available interfaces
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # IPv4,tipo de socket
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((HOST, COLETOR_PORTA))  # liga o socket com IP e porta
@@ -211,6 +233,6 @@ while 1:
     s.listen(1)  # espera chegar pacotes na porta especificada
     conn, addr = s.accept()  # Aceita uma conexao
     print 'Aceitou uma conexao de ', addr
-    # Criacao de thread para nao travar o servidor e poder receber conexoes dos clientes a qualquer momento
+    # Criacao de thread para nao travar o coletor e poder receber conexoes dos clientes a qualquer momento
     t = Thread(target=aceita, args=(conn, addr,))
     t.start()
